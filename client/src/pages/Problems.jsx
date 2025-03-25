@@ -160,7 +160,8 @@ function ProblemsPage() {
         open={openProblemDialog}
         onClose={() => setOpenProblemDialog(false)}
         categories={categories}
-        onAddProblem={(newProblem) => {
+        onAddProblem={
+          (newProblem) => {
           // Update the categories with the new problem
           const updatedCategories = categories.map((category) => {
             if (category.id === newProblem.categoryId) {
@@ -172,6 +173,8 @@ function ProblemsPage() {
             return category
           })
           setCategories(updatedCategories)
+          // console.log("categories data", categories);
+          // console.log("====", updatedCategories);
           setOpenProblemDialog(false)
         }}
       />

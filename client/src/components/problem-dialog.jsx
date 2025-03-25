@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogTitle,
@@ -18,9 +18,10 @@ import {
 } from "@mui/material"
 import { fetchPostWithAuth } from "../services/security/fetchWithAuth"
 import { useAuthUser } from "../services/security/AuthContext";
+import { postProblems, putProblems } from "../services/problems";
 
 
-export default function ProblemDialog({ open, onClose, categories, onAddProblem }) {
+export default function ProblemDialog({ open, onClose, categories, onAddProblem, editProblem=null}) {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const { isAuthenticated, user } = useAuthUser();
@@ -29,12 +30,46 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem 
     description: "",
     source: "",
     difficulty: "", 
+    voteCnt : 0,
     createdById: null,
     categoryId: "",
   })
 
-  console.log("User:", user);
+  console.log(isAuthenticated, "User:", user);
 
+  // Set form data when editing a problem
+  useEffect(() => {
+    if (editProblem) {
+      setFormData({
+        problemName: editProblem.problemName || "",
+        description: editProblem.description || "",
+        source: editProblem.source || "",
+        difficulty: editProblem.difficulty || "",
+        categoryId: editProblem.categoryId || "",
+        votes: editProblem.votes || 0,
+      })
+    } else {
+      // Reset form when not in edit mode
+      if (isAuthenticated && user?.id) {
+        setFormData({
+          ...formData,
+          createdById: user.id,
+        })
+      } 
+    }
+  }, [editProblem])
+  
+  // // Update createdBy when user.id is available
+  // useEffect(() => {
+  //   if (isAuthenticated && user?.id) {
+  //     setFormData({
+  //       ...formData,
+  //       createdById: user.id,
+  //     })
+  //   }
+  // }, [isAuthenticated, user?.id]); // Trigger when user.id changes
+
+  // console.log("begin", formData)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -52,6 +87,8 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem 
     }
   }
 
+
+  // helper func for handleSubmit
   const validateForm = () => {
     const newErrors = {}
 
@@ -80,23 +117,23 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem 
     return Object.keys(newErrors).length === 0
   }
 
+
+  // helper func for handleSubmit: prepare the inserted new problem
   async function insertProblem(problemData) {
-    // const data = await fetchPostWithAuth(`${process.env.REACT_APP_API_URL}/problems`, problemData)
+    try {
+        const data = await postProblems(problemData); // Already parsed JSON, we can not write data.ok
 
-    const data = await fetch(`${process.env.REACT_APP_API_URL}/problems`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(problemData)
-    });
-
-    if (data.ok) {
-      const problem = await data.json()
-      return problem
-    } else {
-      throw new Error("Failed to create problem")
+        if (data && data.id) { // Ensure response contains expected data
+            return data;
+        } else {
+            throw new Error(`Failed to create problem: ${data.error || "Invalid response"}`);
+        }
+    } catch (error) {
+        console.error("Error in insertProblem:", error);
+        throw new Error("Failed to create problem");
     }
-  }
+}
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -107,12 +144,7 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem 
 
     setLoading(true)
 
-    if (isAuthenticated && user?.id) {
-      setFormData(prevFormData => ({
-        ...prevFormData,
-        createdById: user.id
-      }));
-    }
+    console.log("handleSubmit", formData)
 
     try {
       const newProblem = await insertProblem(formData)
@@ -135,7 +167,8 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem 
       description: "",
       source: "",
       difficulty: "", 
-      createdById: null,
+      voteCnt : 0,
+      createdById: user.id,
       categoryId: "",
     })
     setErrors({})

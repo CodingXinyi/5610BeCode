@@ -115,13 +115,14 @@ app.get("/me", requireAuth, async (req, res) => {
 // POST a new problem (requires authentication)
 app.post("/problems", requireAuth, async (req, res) => {
   try {
-    const { problemName, description, source, difficulty, createdById, categoryId } = req.body;
+    const { problemName, description, source, difficulty, voteCnt, createdById, categoryId } = req.body;
     const problem = await prisma.problem.create({
       data: {
         problemName : problemName,
         description : description,
         source : source,
         difficulty : difficulty,
+        voteCnt : voteCnt,
         createdBy: { connect: { id: parseInt(createdById) } },
         category: { connect: { id: parseInt(categoryId) } },
       },
@@ -189,6 +190,7 @@ app.put('/problems/:id', requireAuth, async (req, res) => {
               description: req.body.description ?? existingProblem.description,
               source: req.body.source ?? existingProblem.source,
               difficulty: req.body.difficulty ?? existingProblem.difficulty,
+              voteCnt : req.body.voteCnt ?? existingProblem.voteCnt,
               categoryId: req.body.categoryId ?? existingProblem.categoryId
           }
       });

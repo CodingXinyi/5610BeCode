@@ -34,6 +34,7 @@ import AddIcon from "@mui/icons-material/Add"
 import ProblemItem from "./problem-item"
 import CategoryDialog from "./category-dialog"
 import { fetchDeleteWithAuth, fetchPutWithAuth } from "../services/security/fetchWithAuth"
+import { getProblemsByCategory } from "../services/problems"
 
 // Styled components
 const ColumnHeaders = styled(Grid)(({ theme }) => ({
@@ -44,6 +45,7 @@ const ColumnHeaders = styled(Grid)(({ theme }) => ({
 }))
 
 
+// onCategoriesChange 
 export default function CategoryList({ categories, isLoggedIn, onCategoriesChange }) {
   const [expanded, setExpanded] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -119,45 +121,30 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
     }
   }
 
-    // Fetch problems by category and update state
-    const getProblemsByCategory = async (categoryId) => {
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/problems/category/${categoryId}`
-        )
-        
-        if (!response.ok) {
-          throw new Error(`Error fetching problems: ${response.statusText}`)
-        }
-        
-        const problems = await response.json()
-        console.log("getProblemsByCategory", problems)
-        setProblemsByCategory((prev) => ({ ...prev, [categoryId]: problems }))
-      } catch (error) {
-        console.error("Failed to fetch problems:", error)
-      }
+  // Effect to load problems for each category when categories change
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+        // Use an async function to handle the async fetch within useEffect
+        const fetchProblems = async () => {
+            for (const category of categories) {
+                const problems = await getProblemsByCategory(category.id);
+                console.log(problems);  // This will now log the actual problems
+                setProblemsByCategory((prev) => ({ ...prev, [category.id]: problems }));
+            }
+        };
+        fetchProblems();
     }
-  
-    // Effect to load problems for each category when categories change
-    useEffect(() => {
-      if (categories && categories.length > 0) {
-        categories.forEach((category) => {
-          // Fetch problems for each category
-          getProblemsByCategory(category.id)
-        })
-      }
-    }, [categories])
-  
-    if (!categories || categories.length === 0) {
-      return (
-        <Paper sx={{ p: 3, textAlign: "center" }}>
-          <Typography variant="body1">
-            No categories found. {isLoggedIn ? "Create your first category!" : "Please login to create categories."}
-          </Typography>
-        </Paper>
-      )
-    }
-  
+  }, [categories]);
+
+  if (!categories || categories.length === 0) {
+    return (
+      <Paper sx={{ p: 3, textAlign: "center" }}>
+        <Typography variant="body1">
+          No categories found. {isLoggedIn ? "Create your first category!" : "Please login to create categories."}
+        </Typography>
+      </Paper>
+    )
+  }
 
 
   return (
@@ -239,15 +226,19 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
             </ColumnHeaders>
           )}
 
-        {console.log("Problems for category", category.id, problemsByCategory[category.id])}
-        {console.log("Type of problemsByCategory[category.id]:", typeof problemsByCategory[category.id])}
+        {/* {console.log("Problems for category", category.id, problemsByCategory[category.id])} */}
+        {/* {console.log("Type of problemsByCategory[category.id]:", typeof problemsByCategory[category.id])} */}
           {problemsByCategory[category.id]?.length > 0 ? (
             <List>
               {problemsByCategory[category.id].map((problem, index) => (
                 <Box key={problem.id}>
                   {index > 0 && <Divider component="li" />}
-                  <ProblemItem problem={problem} />
-                </Box>
+                  <ProblemItem 
+                    problem={problem} 
+                    isLoggedIn={isLoggedIn}
+                    setProblemsByCategory={setProblemsByCategory}
+                  />
+                </Box>  
               ))}
             </List>
           ) : (

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   TableCell,
   TableRow,
@@ -8,12 +9,17 @@ import {
   Link,
   ListItem,
   Grid,
-  Typography
+  Typography, 
+  Tooltip
 } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import ThumbUpIcon from "@mui/icons-material/ThumbUp"
+import ThumbDownIcon from "@mui/icons-material/ThumbDown"
 import MenuBookIcon from "@mui/icons-material/MenuBook"
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects"
+import EditIcon from "@mui/icons-material/Edit"
+import DeleteIcon from "@mui/icons-material/Delete"
+import { deleteProblems } from "../services/problems"
 
 
 
@@ -38,7 +44,47 @@ const getDifficultyColor = (difficulty) => {
   }
 }
 
-export function ProblemItem({ problem }) {
+export function ProblemItem({ problem, onEdit, onVote, isLoggedIn, setProblemsByCategory }) {
+  const [votes, setVotes] = useState(problem.votes || 0)
+
+  const handleVote = (value) => {
+    const newVotes = votes + value
+    setVotes(newVotes)
+    if (onVote) {
+      onVote(problem.id, newVotes)
+    }
+  }
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(problem)
+    }
+  }
+
+  const handleDelete = async (problemId, categoryId) => {
+    if (!window.confirm("Are you sure you want to delete this problem?")) {
+      return; // Exit if the user cancels the deletion
+    }
+  
+    try {
+      await deleteProblems(problemId);
+  
+      // Update state: remove deleted problem from the corresponding category
+      setProblemsByCategory((prev) => {
+        const updatedCategory = prev[categoryId]?.filter(
+          (problem) => problem.id !== problemId
+        ) || [];
+  
+        return { ...prev, [categoryId]: updatedCategory };
+      });
+  
+    } catch (error) {
+      console.error("Error deleting problem:", error.message);
+      alert("Failed to delete problem. Please try again.");
+    }
+  }  
+
+
   return (
     <StyledListItem disablePadding>
       <Grid container alignItems="center">
@@ -50,7 +96,7 @@ export function ProblemItem({ problem }) {
         </Grid>
         <Grid item xs={2.4} sx={{ textAlign: "center" }}>
           <Link
-            href="https://leetcode.com/problems/random"
+            href={problem.source || "https://leetcode.com/problems/random"}
             target="_blank"
             rel="noopener noreferrer"
             sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -68,10 +114,60 @@ export function ProblemItem({ problem }) {
             Solution
           </Link>
         </Grid>
-        <Grid item xs={2.4} sx={{ textAlign: "center" }}>
-          <IconButton size="small" color="primary">
-            <ThumbUpIcon fontSize="small" />
-          </IconButton>
+        <Grid item xs={2.4} sx={{ textAlign: "center", display: "flex", justifyContent: "center", gap: 1 }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Tooltip title="Downvote">
+              <span>
+                <IconButton 
+                  size="small" 
+                  color="default" 
+                  onClick={() => handleVote(-1)}
+                  disabled={!isLoggedIn}
+                >
+                  <ThumbDownIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Typography variant="body2" sx={{ mx: 0.5 }}>
+              {votes}
+            </Typography>
+            <Tooltip title="Upvote">
+              <span>
+                <IconButton 
+                  size="small" 
+                  color="primary" 
+                  onClick={() => handleVote(1)}
+                  disabled={!isLoggedIn}
+                >
+                  <ThumbUpIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </div>
+          <Tooltip title="Edit problem">
+            <span>
+              <IconButton 
+                size="small" 
+                color="primary" 
+                onClick={handleEdit}
+                disabled={!isLoggedIn}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Delete problem">
+            <span>
+              <IconButton 
+                size="small" 
+                color="error" 
+                onClick={() => handleDelete(problem.id, problem.categoryId)} // Pass problem.id
+                disabled={!isLoggedIn}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
         </Grid>
       </Grid>
     </StyledListItem>

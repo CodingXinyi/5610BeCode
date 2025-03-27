@@ -18,7 +18,7 @@ import {
 } from "@mui/material"
 import { fetchPostWithAuth } from "../services/security/fetchWithAuth"
 import { useAuthUser } from "../services/security/AuthContext";
-import { postProblems, putProblems } from "../services/problems";
+import { postProblems, putProblems } from "../services/problemsServce";
 
 
 export default function ProblemDialog({ open, onClose, categories, onChangeProblem, editProblem=null}) {
@@ -35,7 +35,7 @@ export default function ProblemDialog({ open, onClose, categories, onChangeProbl
     categoryId: "",
   })
 
-  console.log(isAuthenticated, "User:", user);
+  // console.log(isAuthenticated, "User:", user);
 
   // Set form data when editing a problem
   useEffect(() => {
@@ -182,7 +182,9 @@ export default function ProblemDialog({ open, onClose, categories, onChangeProbl
   }
 
   const handleClose = () => {
-    resetForm()
+    if (!editProblem) {
+      resetForm()
+    }
     onClose()
   }
 

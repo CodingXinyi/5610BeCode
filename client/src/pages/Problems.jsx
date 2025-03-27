@@ -11,7 +11,7 @@ import CategoryList from "../components/category-list"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useAuthUser } from "../services/security/AuthContext";
 import { useNavigate } from "react-router-dom"; 
-import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problems"
+import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problemsServce"
 
 
 function ProblemsPage() {
@@ -157,17 +157,18 @@ function ProblemsPage() {
         )}
 
 
-        <CategoryList categories={categories} isLoggedIn={isLoggedIn} onCategoriesChange={setCategories} problemsByCategory={problemsByCategory} setProblemsByCategory={setProblemsByCategory} />
+        <CategoryList categories={categories} isLoggedIn={isLoggedIn} setCategories={setCategories} problemsByCategory={problemsByCategory} setProblemsByCategory={setProblemsByCategory} />
       </Container>
+      
 
+      {/* categoryDialogOpen, setCategoryDialogOpen, categories, setCategories, isEdit = false, changeCategory = null */}
       <CategoryDialog
-        open={openCategoryDialog}
-        onClose={() => setOpenCategoryDialog(false)}
-        onAddCategory={(newCategory) => {
-          setCategories([...categories, newCategory])
-          setOpenCategoryDialog(false)
-        }}
+        categoryDialogOpen={openCategoryDialog}
+        setCategoryDialogOpen={setOpenCategoryDialog}
+        categories={categories}
+        setCategories={setCategories}
       />
+
 
       {/* ProblemDialog({ open, onClose, categories, onChangeProblem, editProblem=null}) */}
       <ProblemDialog

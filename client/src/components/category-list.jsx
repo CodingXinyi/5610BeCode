@@ -30,6 +30,8 @@ import DeleteIcon from "@mui/icons-material/Delete"
 import ProblemItem from "./problem-item"
 import CategoryDialog from "./category-dialog"
 import { fetchDeleteWithAuth, fetchPutWithAuth } from "../services/security/fetchWithAuth"
+import { putCategory, deleteCategory } from "../services/categoriesService"
+
 
 // Styled components
 const ColumnHeaders = styled(Grid)(({ theme }) => ({
@@ -40,8 +42,8 @@ const ColumnHeaders = styled(Grid)(({ theme }) => ({
 }))
 
 
-// onCategoriesChange 
-export default function CategoryList({ categories, isLoggedIn, onCategoriesChange, problemsByCategory, setProblemsByCategory }) {
+
+export default function CategoryList({ categories, isLoggedIn, setCategories, problemsByCategory, setProblemsByCategory }) {
   const [expanded, setExpanded] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -63,7 +65,7 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
     setEditDialogOpen(true)
   }
 
-  const handleDeleteClick = (event, category) => {
+  const handleDeleteClick = (category) => {
     if (!isLoggedIn) {
       alert("Please login to edit categories");
       return;
@@ -73,37 +75,17 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
     setDeleteDialogOpen(true)
   }
 
-  const handleUpdateCategory = async (updatedCategory) => {
-    try {
-      const data = await fetchPutWithAuth(`${process.env.REACT_APP_API_URL}/categories/${updatedCategory.id}`, {
-        categoryName: updatedCategory.categoryName,
-      })
 
-      if (data.ok) {
-        const updated = await data.json()
-        // Update the categories list
-        const updatedCategories = categories.map((cat) => (cat.id === updated.id ? updated : cat))
-        onCategoriesChange(updatedCategories)
-        setEditDialogOpen(false)
-      } else {
-        throw new Error("Failed to update category")
-      }
-    } catch (error) {
-      console.error("Error updating category:", error)
-      setError("Failed to update category. Please try again.")
-    }
-  }
-
-  const handleDeleteCategory = async () => {
+  const handleDeleteCategory = async (selectDeleteCategory) => {
     setLoading(true)
     try {
-      const data = await fetchDeleteWithAuth(`${process.env.REACT_APP_API_URL}/categories/${selectedCategory.id}`)
+      const data = await deleteCategory(selectDeleteCategory.id)
 
-      if (data.ok) {
+      if (data) {
         // Remove the category from the list
-        const updatedCategories = categories.filter((cat) => cat.id !== selectedCategory.id)
-        onCategoriesChange(updatedCategories)
-        setDeleteDialogOpen(false)
+        const updatedCategories = categories.filter((cat) => cat.id !== selectDeleteCategory.id);
+        setCategories(updatedCategories);
+        setDeleteDialogOpen(false);
       } else {
         throw new Error("Failed to delete category")
       }
@@ -114,7 +96,7 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
       setLoading(false)
     }
   }
-
+  
 
   if (!categories || categories.length === 0) {
     return (
@@ -165,7 +147,7 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
               <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
                 <IconButton
                   size="small"
-                  onClick={(e) => handleEditClick(e, category)}
+                  onClick={() => handleEditClick(category)}
                   disabled={!isLoggedIn}
                   sx={{ mr: 1 }}
                 >
@@ -173,7 +155,7 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
                 </IconButton>
                 <IconButton
                   size="small"
-                  onClick={(e) => handleDeleteClick(e, category)}
+                  onClick={() => handleDeleteClick(category)}
                   disabled={!isLoggedIn}
                   color="error"
                 >
@@ -236,15 +218,18 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
 
 
       {/* Edit Category Dialog */}
+      {/* categoryDialogOpen, setCategoryDialogOpen, categories, setCategories, isEdit = false, changeCategory = null */}
       {selectedCategory && (
         <CategoryDialog
-          open={editDialogOpen}
-          onClose={() => setEditDialogOpen(false)}
-          onAddCategory={handleUpdateCategory}
+          categoryDialogOpen={editDialogOpen}
+          setCategoryDialogOpen={setEditDialogOpen}
+          categories={categories}
+          setCategories={setCategories}
           isEdit={true}
-          category={selectedCategory}
+          changeCategory={selectedCategory}
         />
       )}
+
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
@@ -259,7 +244,7 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
           <Button onClick={() => setDeleteDialogOpen(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleDeleteCategory} color="error" disabled={loading}>
+          <Button onClick={() => handleDeleteCategory(selectedCategory)} color="error" disabled={loading}>
             Delete
           </Button>
         </DialogActions>

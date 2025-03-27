@@ -262,7 +262,7 @@ app.put('/categories/:id', requireAuth, async (req, res) => {
       const { categoryName } = req.body;
       const category = await prisma.category.update({
           where: { id: parseInt(req.params.id) },
-          data: { categoryName }
+          data: { categoryName : categoryName }
       });
       res.json(category);
   } catch (error) {

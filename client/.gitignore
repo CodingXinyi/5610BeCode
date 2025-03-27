@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Keep environment variables out of version control
+node_modules
+dbenv

@@ -18,7 +18,7 @@ import MenuBookIcon from "@mui/icons-material/MenuBook"
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
-import { deleteProblems, putProblems, addOrUpdateProblemToCategoryMap } from "../services/problems"
+import { deleteProblems, putProblems, addOrUpdateProblemToCategoryMap } from "../services/problemsServce"
 import ProblemDialog from "./problem-dialog"
 
 

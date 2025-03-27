@@ -1,21 +1,3 @@
-// export const fetchProducts = async (token, requestBody) => {
-//     try {
-//       const url = `${BASE_URL}/products/search/?page=${requestBody.page}&pageSize=${requestBody.page_size}`;
-//       const response = await axios.post(url, requestBody, {
-//         headers: {
-//           Authorization: `Token ${token}`,
-//         },
-//       });
-//       if (response.data.success) {
-//         return response.data.data;
-//       } else {
-//         throw new Error('Failed to load products. Please try again later.');
-//       }
-//     } catch (err) {
-//       throw new Error('Error fetching products. Please try again later.');
-//     }
-//   };
-  
 // Fetch problems by category and update state
 export const getProblemsByCategory = async (categoryId) => {
     try {

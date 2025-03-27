@@ -10,12 +10,14 @@ import ProblemDialog from "../components/problem-dialog"
 import CategoryList from "../components/category-list"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useAuthUser } from "../services/security/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; 
+import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problems"
 
 
 function ProblemsPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [categories, setCategories] = useState([])
+  const [problemsByCategory, setProblemsByCategory] = useState({});
   const [openCategoryDialog, setOpenCategoryDialog] = useState(false)
   const [openProblemDialog, setOpenProblemDialog] = useState(false)
   const { isAuthenticated, loading, user, login, register, logout } = useAuthUser();
@@ -51,12 +53,23 @@ function ProblemsPage() {
     fetchCategories()
   }, [])
 
-  // const handleLogout = () => {
-  //   localStorage.removeItem("token")
-  //   setIsLoggedIn(false)
-  //   // Optionally redirect to login page
-  //   router.push("/login")
-  // }
+  // Effect to load problems for each category when categories change
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+        // Use an async function to handle the async fetch within useEffect
+        const fetchProblems = async () => {
+            for (const category of categories) {
+                const problems = await getProblemsByCategory(category.id);
+                console.log(problems);  // This will now log the actual problems
+                setProblemsByCategory((prev) => ({ ...prev, [category.id]: problems }));
+            }
+        };
+        fetchProblems();
+    }
+  }, [categories]);
+
+  console.log("problems page", problemsByCategory);
+
 
   const handleLogout = async (e) => {
     e.preventDefault();
@@ -144,7 +157,7 @@ function ProblemsPage() {
         )}
 
 
-        <CategoryList categories={categories} isLoggedIn={isLoggedIn} onCategoriesChange={setCategories} />
+        <CategoryList categories={categories} isLoggedIn={isLoggedIn} onCategoriesChange={setCategories} problemsByCategory={problemsByCategory} setProblemsByCategory={setProblemsByCategory} />
       </Container>
 
       <CategoryDialog
@@ -156,27 +169,14 @@ function ProblemsPage() {
         }}
       />
 
+      {/* ProblemDialog({ open, onClose, categories, onChangeProblem, editProblem=null}) */}
       <ProblemDialog
         open={openProblemDialog}
         onClose={() => setOpenProblemDialog(false)}
         categories={categories}
-        onAddProblem={
-          (newProblem) => {
-          // Update the categories with the new problem
-          const updatedCategories = categories.map((category) => {
-            if (category.id === newProblem.categoryId) {
-              return {
-                ...category,
-                problems: [...(category.problems || []), newProblem],
-              }
-            }
-            return category
-          })
-          setCategories(updatedCategories)
-          // console.log("categories data", categories);
-          // console.log("====", updatedCategories);
-          setOpenProblemDialog(false)
-        }}
+        onChangeProblem={(newProblem) => 
+          addOrUpdateProblemToCategoryMap(newProblem, problemsByCategory, setProblemsByCategory, setOpenProblemDialog)
+        }
       />
     </Box>
   )

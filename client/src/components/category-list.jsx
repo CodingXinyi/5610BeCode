@@ -25,16 +25,11 @@ import {
 } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import ThumbUpIcon from "@mui/icons-material/ThumbUp"
-import MenuBookIcon from "@mui/icons-material/MenuBook"
-import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
-import AddIcon from "@mui/icons-material/Add"
 import ProblemItem from "./problem-item"
 import CategoryDialog from "./category-dialog"
 import { fetchDeleteWithAuth, fetchPutWithAuth } from "../services/security/fetchWithAuth"
-import { getProblemsByCategory } from "../services/problems"
 
 // Styled components
 const ColumnHeaders = styled(Grid)(({ theme }) => ({
@@ -46,20 +41,19 @@ const ColumnHeaders = styled(Grid)(({ theme }) => ({
 
 
 // onCategoriesChange 
-export default function CategoryList({ categories, isLoggedIn, onCategoriesChange }) {
+export default function CategoryList({ categories, isLoggedIn, onCategoriesChange, problemsByCategory, setProblemsByCategory }) {
   const [expanded, setExpanded] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [problemsByCategory, setProblemsByCategory] = useState({})
   const [error, setError] = useState("")
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false)
   }
 
-  const handleEditClick = (event, category) => {
+  const handleEditClick = (category) => {
     if (!isLoggedIn) {
       alert("Please login to edit categories");
       return;
@@ -121,20 +115,6 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
     }
   }
 
-  // Effect to load problems for each category when categories change
-  useEffect(() => {
-    if (categories && categories.length > 0) {
-        // Use an async function to handle the async fetch within useEffect
-        const fetchProblems = async () => {
-            for (const category of categories) {
-                const problems = await getProblemsByCategory(category.id);
-                console.log(problems);  // This will now log the actual problems
-                setProblemsByCategory((prev) => ({ ...prev, [category.id]: problems }));
-            }
-        };
-        fetchProblems();
-    }
-  }, [categories]);
 
   if (!categories || categories.length === 0) {
     return (
@@ -236,6 +216,8 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
                   <ProblemItem 
                     problem={problem} 
                     isLoggedIn={isLoggedIn}
+                    categories={categories}
+                    problemsByCategory={problemsByCategory}
                     setProblemsByCategory={setProblemsByCategory}
                   />
                 </Box>  
@@ -250,6 +232,8 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
         </AccordionDetails>
         </Accordion>
       ))}
+
+
 
       {/* Edit Category Dialog */}
       {selectedCategory && (

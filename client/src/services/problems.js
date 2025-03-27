@@ -33,6 +33,25 @@ export const getProblemsByCategory = async (categoryId) => {
     }
 };
 
+// Function to add or update a problem in the category map
+export const addOrUpdateProblemToCategoryMap = (newProblem, problemsByCategory, setProblemsByCategory, setOpenProblemDialog) => {
+    const updatedProblems = (problemsByCategory[newProblem.categoryId] || []).map(problem => 
+        problem.id === newProblem.id ? newProblem : problem
+    );
+
+    if (!updatedProblems.find(problem => problem.id === newProblem.id)) {
+        updatedProblems.push(newProblem);
+    }
+
+    const updatedProblemsByCategory = {
+        ...problemsByCategory,
+        [newProblem.categoryId]: updatedProblems,
+    };
+
+    setProblemsByCategory(updatedProblemsByCategory);
+    setOpenProblemDialog(false);
+};
+
 
 
 // insert problems 
@@ -62,9 +81,9 @@ export const postProblems = async (data) => {
 
 
 // update problem
-export const putProblems = async (data) => {
+export const putProblems = async (id, data) => {
     try {
-        const url = `${process.env.REACT_APP_API_URL}/problems`;
+        const url = `${process.env.REACT_APP_API_URL}/problems/${id}`;
         const response = await fetch(url, {
             method: "PUT",
             credentials: "include",
@@ -110,3 +129,5 @@ export const deleteProblems = async (problemId) => {
         throw error;
     }
 };
+
+

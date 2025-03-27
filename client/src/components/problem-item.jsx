@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import {
-  TableCell,
-  TableRow,
+  Box,
   IconButton,
   Chip,
   Link,
@@ -19,7 +18,8 @@ import MenuBookIcon from "@mui/icons-material/MenuBook"
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
-import { deleteProblems } from "../services/problems"
+import { deleteProblems, putProblems, addOrUpdateProblemToCategoryMap } from "../services/problems"
+import ProblemDialog from "./problem-dialog"
 
 
 
@@ -44,8 +44,10 @@ const getDifficultyColor = (difficulty) => {
   }
 }
 
-export function ProblemItem({ problem, onEdit, onVote, isLoggedIn, setProblemsByCategory }) {
+export function ProblemItem({ problem, onEdit, onVote, isLoggedIn, categories, problemsByCategory, setProblemsByCategory }) {
   const [votes, setVotes] = useState(problem.votes || 0)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [selectedProblem, setSelectedProblem] = useState(null)
 
   const handleVote = (value) => {
     const newVotes = votes + value
@@ -61,7 +63,19 @@ export function ProblemItem({ problem, onEdit, onVote, isLoggedIn, setProblemsBy
     }
   }
 
-  const handleDelete = async (problemId, categoryId) => {
+
+  const handleEditProblemClick = (problem) => {
+    if (!isLoggedIn) {
+      alert("Please login to edit problem");
+      return;
+    }
+  
+    setSelectedProblem(problem)
+    setEditDialogOpen(true)
+  }
+
+
+  const handleDeleteProblem = async (problemId, categoryId) => {
     if (!window.confirm("Are you sure you want to delete this problem?")) {
       return; // Exit if the user cancels the deletion
     }
@@ -85,92 +99,108 @@ export function ProblemItem({ problem, onEdit, onVote, isLoggedIn, setProblemsBy
   }  
 
 
+
   return (
-    <StyledListItem disablePadding>
-      <Grid container alignItems="center">
-        <Grid item xs={2.4}>
-          <Typography variant="body2">{problem.problemName}</Typography>
-        </Grid>
-        <Grid item xs={2.4} sx={{ textAlign: "center" }}>
-          <Chip label={problem.difficulty} color={getDifficultyColor(problem.difficulty)} size="small" />
-        </Grid>
-        <Grid item xs={2.4} sx={{ textAlign: "center" }}>
-          <Link
-            href={problem.source || "https://leetcode.com/problems/random"}
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            <MenuBookIcon fontSize="small" sx={{ mr: 0.5 }} />
-            Source
-          </Link>
-        </Grid>
-        <Grid item xs={2.4} sx={{ textAlign: "center" }}>
-          <Link
-            href="https://solutions.com/random"
-            sx={{ display: "flex", alignItems: "center", justifyContent: "center", color: "green" }}
-          >
-            <EmojiObjectsIcon fontSize="small" sx={{ mr: 0.5 }} />
-            Solution
-          </Link>
-        </Grid>
-        <Grid item xs={2.4} sx={{ textAlign: "center", display: "flex", justifyContent: "center", gap: 1 }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Tooltip title="Downvote">
-              <span>
-                <IconButton 
-                  size="small" 
-                  color="default" 
-                  onClick={() => handleVote(-1)}
-                  disabled={!isLoggedIn}
-                >
-                  <ThumbDownIcon fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Typography variant="body2" sx={{ mx: 0.5 }}>
-              {votes}
-            </Typography>
-            <Tooltip title="Upvote">
+    <Box>
+      <StyledListItem disablePadding>
+        <Grid container alignItems="center">
+          <Grid item xs={2.4}>
+            <Typography variant="body2">{problem.problemName}</Typography>
+          </Grid>
+          <Grid item xs={2.4} sx={{ textAlign: "center" }}>
+            <Chip label={problem.difficulty} color={getDifficultyColor(problem.difficulty)} size="small" />
+          </Grid>
+          <Grid item xs={2.4} sx={{ textAlign: "center" }}>
+            <Link
+              href={problem.source || "https://leetcode.com/problems/random"}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <MenuBookIcon fontSize="small" sx={{ mr: 0.5 }} />
+              Source
+            </Link>
+          </Grid>
+          <Grid item xs={2.4} sx={{ textAlign: "center" }}>
+            <Link
+              href="https://solutions.com/random"
+              sx={{ display: "flex", alignItems: "center", justifyContent: "center", color: "green" }}
+            >
+              <EmojiObjectsIcon fontSize="small" sx={{ mr: 0.5 }} />
+              Solution
+            </Link>
+          </Grid>
+          <Grid item xs={2.4} sx={{ textAlign: "center", display: "flex", justifyContent: "center", gap: 1 }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <Tooltip title="Downvote">
+                <span>
+                  <IconButton 
+                    size="small" 
+                    color="default" 
+                    onClick={() => handleVote(-1)}
+                    disabled={!isLoggedIn}
+                  >
+                    <ThumbDownIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Typography variant="body2" sx={{ mx: 0.5 }}>
+                {votes}
+              </Typography>
+              <Tooltip title="Upvote">
+                <span>
+                  <IconButton 
+                    size="small" 
+                    color="primary" 
+                    onClick={() => handleVote(1)}
+                    disabled={!isLoggedIn}
+                  >
+                    <ThumbUpIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </div>
+            <Tooltip title="Update problem">
               <span>
                 <IconButton 
                   size="small" 
                   color="primary" 
-                  onClick={() => handleVote(1)}
+                  onClick={(e) => handleEditProblemClick(problem)}
                   disabled={!isLoggedIn}
                 >
-                  <ThumbUpIcon fontSize="small" />
+                  <EditIcon fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
-          </div>
-          <Tooltip title="Edit problem">
-            <span>
-              <IconButton 
-                size="small" 
-                color="primary" 
-                onClick={handleEdit}
-                disabled={!isLoggedIn}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Delete problem">
-            <span>
-              <IconButton 
-                size="small" 
-                color="error" 
-                onClick={() => handleDelete(problem.id, problem.categoryId)} // Pass problem.id
-                disabled={!isLoggedIn}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
+            <Tooltip title="Delete problem">
+              <span>
+                <IconButton 
+                  size="small" 
+                  color="error" 
+                  onClick={() => handleDeleteProblem(problem.id, problem.categoryId)} // Pass problem.id
+                  disabled={!isLoggedIn}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Grid>
         </Grid>
-      </Grid>
-    </StyledListItem>
+      </StyledListItem>
+
+      {/* Edit Problem Dialog */}
+      {selectedProblem && (
+        <ProblemDialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          categories={categories}
+          onChangeProblem={(newProblem) => 
+            addOrUpdateProblemToCategoryMap(newProblem, problemsByCategory, setProblemsByCategory, setEditDialogOpen)
+          }
+          editProblem={problem}
+        />
+      )}
+    </Box>
   )
 }
 

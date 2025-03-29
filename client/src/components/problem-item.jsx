@@ -18,8 +18,9 @@ import MenuBookIcon from "@mui/icons-material/MenuBook"
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
-import { deleteProblems, putProblems, addOrUpdateProblemToCategoryMap } from "../services/problemsServce"
+import { deleteProblems, putProblems, addOrUpdateProblemToCategoryMap } from "../services/problemServce"
 import ProblemDialog from "./problem-dialog"
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -48,6 +49,8 @@ export function ProblemItem({ problem, onEdit, onVote, isLoggedIn, categories, p
   const [votes, setVotes] = useState(problem.votes || 0)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedProblem, setSelectedProblem] = useState(null)
+  const navigate = useNavigate();
+
 
   const handleVote = (value) => {
     const newVotes = votes + value
@@ -123,8 +126,8 @@ export function ProblemItem({ problem, onEdit, onVote, isLoggedIn, categories, p
           </Grid>
           <Grid item xs={2.4} sx={{ textAlign: "center" }}>
             <Link
-              href="https://solutions.com/random"
-              sx={{ display: "flex", alignItems: "center", justifyContent: "center", color: "green" }}
+              onClick={() => navigate(`/solutions/${problem.id}`)}
+              sx={{ display: "flex", alignItems: "center", justifyContent: "center", color: "green", cursor: "pointer" }}
             >
               <EmojiObjectsIcon fontSize="small" sx={{ mr: 0.5 }} />
               Solution

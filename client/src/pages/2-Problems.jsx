@@ -11,7 +11,7 @@ import CategoryList from "../components/category-list"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useAuthUser } from "../services/security/AuthContext";
 import { useNavigate } from "react-router-dom"; 
-import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problemsServce"
+import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problemServce"
 
 
 function ProblemsPage() {

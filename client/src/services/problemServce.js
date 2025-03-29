@@ -113,3 +113,27 @@ export const deleteProblems = async (problemId) => {
 };
 
 
+
+// get all problem
+export const getAllProblems = async () => {
+    try {
+        const url = `${process.env.REACT_APP_API_URL}/problems`; // Send ID in the URL
+        const response = await fetch(url, {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const responseData = await response.json();
+        console.log("getAllProblems API Response:", responseData);
+
+        if (!response.ok) {
+            throw new Error(`Error getring all the problems: ${responseData.error || response.statusText}`);
+        }
+        
+        return responseData;
+    } catch (error) {
+        console.error("Failed to get problem:", error);
+        throw error;
+    }
+};

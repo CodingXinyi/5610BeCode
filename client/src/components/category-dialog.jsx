@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, CircularProgress } from "@mui/material"
-import { createCategory, putCategory, deleteCategory } from "../services/categoriesService"
+import { createCategory, putCategory, deleteCategory } from "../services/categoryService"
 
 export default function CategoryDialog({ categoryDialogOpen, setCategoryDialogOpen, categories, setCategories, isEdit = false, changeCategory = null }) {
   const [categoryName, setCategoryName] = useState("")

@@ -3,7 +3,7 @@ import { useAuthUser } from "../services/security/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, Typography } from "@mui/material";
 
-export default function Home() {
+export default function HomePage() {
   const { login, register } = useAuthUser();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -31,6 +31,7 @@ export default function Home() {
         const success = await login(email, password);
         if (success) {
             navigate("/problems");
+            // navigate("/solutions/2");
         } else {
             console.log("Login failed");
             alert("Invalid Email or Password, please try again!");          

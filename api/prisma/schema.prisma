@@ -43,6 +43,7 @@ model Solution {
   problemId      Int
   user          User       @relation(fields: [userId], references: [id])
   userId        Int
+  solutionName   String    @default("default_solutionName")
   codeSnippet    String
   timeComplexity String?
   spaceComplexity String?

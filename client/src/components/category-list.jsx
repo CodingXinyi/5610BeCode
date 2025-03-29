@@ -12,7 +12,7 @@ import {
   Collapse,
   Typography,
   IconButton,
-  Chip,
+  // Chip,
   Grid,
   Link,
   Button,
@@ -30,7 +30,7 @@ import DeleteIcon from "@mui/icons-material/Delete"
 import ProblemItem from "./problem-item"
 import CategoryDialog from "./category-dialog"
 import { fetchDeleteWithAuth, fetchPutWithAuth } from "../services/security/fetchWithAuth"
-import { putCategory, deleteCategory } from "../services/categoriesService"
+import { putCategory, deleteCategory } from "../services/categoryService"
 
 
 // Styled components
@@ -162,7 +162,10 @@ export default function CategoryList({ categories, isLoggedIn, setCategories, pr
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Box>
-              <Chip label={`${problemsByCategory[category.id]?.length || 0} Problems`} color="white" size="small" />
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full">
+                {`${problemsByCategory[category.id]?.length || 0} Problems`}
+              </span>
+              {/* <Chip label={`${problemsByCategory[category.id]?.length || 0} Problems`} color="white" size="small" /> */}
             </Box>
           </AccordionSummary>
 

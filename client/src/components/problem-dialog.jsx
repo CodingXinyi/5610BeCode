@@ -18,7 +18,7 @@ import {
 } from "@mui/material"
 import { fetchPostWithAuth } from "../services/security/fetchWithAuth"
 import { useAuthUser } from "../services/security/AuthContext";
-import { postProblems, putProblems } from "../services/problemsServce";
+import { postProblems, putProblems } from "../services/problemServce";
 
 
 export default function ProblemDialog({ open, onClose, categories, onChangeProblem, editProblem=null}) {

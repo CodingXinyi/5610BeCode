@@ -2,45 +2,65 @@
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, CircularProgress } from "@mui/material"
-import { fetchPostWithAuth, fetchPutWithAuth } from "../services/security/fetchWithAuth"
+import { createCategory, putCategory, deleteCategory } from "../services/categoryService"
 
-export default function CategoryDialog({ open, onClose, onAddCategory, isEdit = false, category = null }) {
+export default function CategoryDialog({ categoryDialogOpen, setCategoryDialogOpen, categories, setCategories, isEdit = false, changeCategory = null }) {
   const [categoryName, setCategoryName] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   // Set initial value when editing
   useEffect(() => {
-    if (isEdit && category) {
-      setCategoryName(category.categoryName)
+    if (isEdit && changeCategory) {
+      setCategoryName(changeCategory.categoryName)
     }
-  }, [isEdit, category])
+  }, [isEdit, changeCategory])
 
-  async function insertCategory(categoryName) {
-    const data = await fetchPostWithAuth(`${process.env.REACT_APP_API_URL}/categories`, {
-      categoryName: categoryName,
-    })
 
-    if (data.ok) {
-      const todo = await data.json()
-      return todo
-    } else {
-      throw new Error("Failed to create category")
+  const handleInsertCategory = async (categoryName) => {
+    try {
+        const data = { categoryName }; // Declare 'data' with 'const'
+        const response = await createCategory(data);
+
+        console.log("handleInsertCategory", response)
+
+        if (response) {
+            setCategories([...categories, response]);
+            setCategoryDialogOpen(false);
+        } else {
+            throw new Error("Failed to create/insert category");
+        }
+    } catch (error) {
+        console.error("Error creating category:", error);
+        setError("Failed to create category. Please try again.");
     }
-  }
+  };
 
-  async function updateCategory(id, categoryName) {
-    const data = await fetchPutWithAuth(`${process.env.REACT_APP_API_URL}/categories/${id}`, {
-      categoryName: categoryName,
-    })
 
-    if (data.ok) {
-      const updated = await data.json()
-      return updated
-    } else {
-      throw new Error("Failed to update category")
-    }
-  }
+  const handleUpdateCategory = async (id, updateCategoryName) => {
+      try {
+          // console.log("handleUpdateCategory==", changeCategory, "===", id, categoryName, updateCategoryName)
+          const data = { "categoryName" : updateCategoryName }; // Declare 'data' with 'const'
+          const response = await putCategory(id, data);
+
+          console.log("handleUpdateCategory", response)
+
+          if (response) {
+              const updatedCategories = categories.map((cat) => 
+                  cat.id === id ? { ...cat, ...data } : cat // Fix incorrect ID reference
+              );
+              setCategories(updatedCategories);
+              setCategoryDialogOpen(false);
+          } else {
+              throw new Error("Failed to update category");
+          }
+      } catch (error) {
+          console.error("Error updating category:", error);
+          setError("Failed to update category. Please try again.");
+      }
+  };
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -54,16 +74,14 @@ export default function CategoryDialog({ open, onClose, onAddCategory, isEdit = 
     setError("")
 
     try {
-      let result
       if (isEdit) {
         // Update existing category
-        result = await updateCategory(category.id, categoryName)
+        handleUpdateCategory(changeCategory.id, categoryName)
       } else {
         // Create new category
-        result = await insertCategory(categoryName)
+        await handleInsertCategory(categoryName)
       }
 
-      onAddCategory(result)
       if (!isEdit) {
         setCategoryName("") // Only clear when adding new
       }
@@ -75,16 +93,18 @@ export default function CategoryDialog({ open, onClose, onAddCategory, isEdit = 
     }
   }
 
+
   const handleClose = () => {
     if (!isEdit) {
       setCategoryName("")
     }
     setError("")
-    onClose()
+    setCategoryDialogOpen(false)
   }
 
+
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={categoryDialogOpen} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>{isEdit ? "Edit Category" : "Add New Category"}</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>

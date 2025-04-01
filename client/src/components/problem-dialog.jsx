@@ -18,10 +18,10 @@ import {
 } from "@mui/material"
 import { fetchPostWithAuth } from "../services/security/fetchWithAuth"
 import { useAuthUser } from "../services/security/AuthContext";
-import { postProblems, putProblems } from "../services/problems";
+import { postProblems, putProblems } from "../services/problemServce";
 
 
-export default function ProblemDialog({ open, onClose, categories, onAddProblem, editProblem=null}) {
+export default function ProblemDialog({ open, onClose, categories, onChangeProblem, editProblem=null}) {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const { isAuthenticated, user } = useAuthUser();
@@ -35,7 +35,7 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem,
     categoryId: "",
   })
 
-  console.log(isAuthenticated, "User:", user);
+  // console.log(isAuthenticated, "User:", user);
 
   // Set form data when editing a problem
   useEffect(() => {
@@ -118,10 +118,17 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem,
   }
 
 
+
   // helper func for handleSubmit: prepare the inserted new problem
-  async function insertProblem(problemData) {
+  async function insertOrUpdateProblem(problemData) {
     try {
-        const data = await postProblems(problemData); // Already parsed JSON, we can not write data.ok
+        let data;
+        if (editProblem) {
+          console.log("problemData.id", editProblem.id, "problemData", problemData);
+          data = await putProblems(editProblem.id, problemData); // Already parsed JSON, we can not write data.ok
+        } else {
+          data = await postProblems(problemData); // Already parsed JSON, we can not write data.ok
+        }
 
         if (data && data.id) { // Ensure response contains expected data
             return data;
@@ -129,7 +136,7 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem,
             throw new Error(`Failed to create problem: ${data.error || "Invalid response"}`);
         }
     } catch (error) {
-        console.error("Error in insertProblem:", error);
+        console.error("Error in insertOrUpdateProblem:", error);
         throw new Error("Failed to create problem");
     }
 }
@@ -147,8 +154,8 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem,
     console.log("handleSubmit", formData)
 
     try {
-      const newProblem = await insertProblem(formData)
-      onAddProblem(newProblem)
+      const newProblem = await insertOrUpdateProblem(formData)
+      onChangeProblem(newProblem)
       resetForm()
     } catch (error) {
       console.error("Error creating problem:", error)
@@ -175,7 +182,9 @@ export default function ProblemDialog({ open, onClose, categories, onAddProblem,
   }
 
   const handleClose = () => {
-    resetForm()
+    if (!editProblem) {
+      resetForm()
+    }
     onClose()
   }
 

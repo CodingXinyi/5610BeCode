@@ -1,7 +1,5 @@
 // console.log("Database URL:", process.env.DATABASE_URL);
 
-// ==== put your endpoints below ====
-
 // ==== User APIs ====
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -98,7 +96,6 @@ app.post("/logout", async (req, res) => {
 });
 
 
-
 // requireAuth middleware will validate the access token sent by the client and will return the user information within req.auth
 app.get("/me", requireAuth, async (req, res) => {
   const user = await prisma.user.findUnique({
@@ -107,7 +104,6 @@ app.get("/me", requireAuth, async (req, res) => {
   });
   res.json(user);
 });
-
 
 
 
@@ -202,7 +198,6 @@ app.put('/problems/:id', requireAuth, async (req, res) => {
 });
 
 
-
 // Delete a problem
 app.delete('/problems/:id', requireAuth, async (req, res) => {
   try {
@@ -262,7 +257,7 @@ app.put('/categories/:id', requireAuth, async (req, res) => {
       const { categoryName } = req.body;
       const category = await prisma.category.update({
           where: { id: parseInt(req.params.id) },
-          data: { categoryName }
+          data: { categoryName : categoryName }
       });
       res.json(category);
   } catch (error) {
@@ -279,6 +274,91 @@ app.delete('/categories/:id', requireAuth, async (req, res) => {
       res.status(400).json({ error: error.message });
   }
 });
+
+
+
+// ==== Problem APIs ====
+// Create a new solution
+app.post('/solutions', requireAuth, async (req, res) => {
+  try {
+      const { problemId, userId, solutionName, codeSnippet, timeComplexity, spaceComplexity } = req.body;
+      const solution = await prisma.solution.create({
+          data: {
+              problemId,
+              userId,
+              solutionName,
+              codeSnippet,
+              timeComplexity,
+              spaceComplexity
+          }
+      });
+      res.status(201).json(solution);
+  } catch (error) {
+      res.status(400).json({ error: error.message });
+  }
+});
+
+// Get solutions by problem ID
+app.get('/solutions/problem/:problemId', requireAuth, async (req, res) => {
+  try {
+      const { problemId } = req.params;
+      const solutions = await prisma.solution.findMany({
+          where: { problemId: parseInt(problemId) }
+      });
+      res.json(solutions);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Update a solution by ID
+app.put('/solutions/:id', requireAuth, async (req, res) => {
+  try {
+      const solutionId = parseInt(req.params.id);
+      if (isNaN(solutionId)) {
+          return res.status(400).json({ error: 'Invalid solution ID' });
+      }
+
+      // Fetch the existing solution
+      const existingSolution = await prisma.solution.findUnique({
+          where: { id: solutionId }
+      });
+
+      if (!existingSolution) {
+          return res.status(404).json({ error: 'Solution not found' });
+      }
+
+      // Merge updated fields with existing values
+      const updatedSolution = await prisma.solution.update({
+          where: { id: solutionId },
+          data: {
+              solutionName: req.body.solutionName ?? existingSolution.solutionName,
+              codeSnippet: req.body.codeSnippet ?? existingSolution.codeSnippet,
+              timeComplexity: req.body.timeComplexity ?? existingSolution.timeComplexity,
+              spaceComplexity: req.body.spaceComplexity ?? existingSolution.spaceComplexity
+          }
+      });
+
+      res.json(updatedSolution);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete a solution by ID
+app.delete('/solutions/:id', requireAuth, async (req, res) => {
+  try {
+      const { id } = req.params;
+      await prisma.solution.delete({
+          where: { id: parseInt(id) }
+      });
+      res.json({ message: 'Solution deleted successfully' });
+  } catch (error) {
+      res.status(400).json({ error: error.message });
+  }
+});
+
+
 
 
 app.listen(8000, () => {

@@ -1,21 +1,3 @@
-// export const fetchProducts = async (token, requestBody) => {
-//     try {
-//       const url = `${BASE_URL}/products/search/?page=${requestBody.page}&pageSize=${requestBody.page_size}`;
-//       const response = await axios.post(url, requestBody, {
-//         headers: {
-//           Authorization: `Token ${token}`,
-//         },
-//       });
-//       if (response.data.success) {
-//         return response.data.data;
-//       } else {
-//         throw new Error('Failed to load products. Please try again later.');
-//       }
-//     } catch (err) {
-//       throw new Error('Error fetching products. Please try again later.');
-//     }
-//   };
-  
 // Fetch problems by category and update state
 export const getProblemsByCategory = async (categoryId) => {
     try {
@@ -31,6 +13,25 @@ export const getProblemsByCategory = async (categoryId) => {
     } catch (error) {
         console.error("Failed to fetch problems:", error);
     }
+};
+
+// Function to add or update a problem in the category map
+export const addOrUpdateProblemToCategoryMap = (newProblem, problemsByCategory, setProblemsByCategory, setOpenProblemDialog) => {
+    const updatedProblems = (problemsByCategory[newProblem.categoryId] || []).map(problem => 
+        problem.id === newProblem.id ? newProblem : problem
+    );
+
+    if (!updatedProblems.find(problem => problem.id === newProblem.id)) {
+        updatedProblems.push(newProblem);
+    }
+
+    const updatedProblemsByCategory = {
+        ...problemsByCategory,
+        [newProblem.categoryId]: updatedProblems,
+    };
+
+    setProblemsByCategory(updatedProblemsByCategory);
+    setOpenProblemDialog(false);
 };
 
 
@@ -62,9 +63,9 @@ export const postProblems = async (data) => {
 
 
 // update problem
-export const putProblems = async (data) => {
+export const putProblems = async (id, data) => {
     try {
-        const url = `${process.env.REACT_APP_API_URL}/problems`;
+        const url = `${process.env.REACT_APP_API_URL}/problems/${id}`;
         const response = await fetch(url, {
             method: "PUT",
             credentials: "include",
@@ -107,6 +108,32 @@ export const deleteProblems = async (problemId) => {
         return responseData;
     } catch (error) {
         console.error("Failed to delete problem:", error);
+        throw error;
+    }
+};
+
+
+
+// get all problem
+export const getAllProblems = async () => {
+    try {
+        const url = `${process.env.REACT_APP_API_URL}/problems`; // Send ID in the URL
+        const response = await fetch(url, {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const responseData = await response.json();
+        console.log("getAllProblems API Response:", responseData);
+
+        if (!response.ok) {
+            throw new Error(`Error getring all the problems: ${responseData.error || response.statusText}`);
+        }
+        
+        return responseData;
+    } catch (error) {
+        console.error("Failed to get problem:", error);
         throw error;
     }
 };

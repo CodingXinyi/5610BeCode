@@ -12,7 +12,7 @@ import {
   Collapse,
   Typography,
   IconButton,
-  Chip,
+  // Chip,
   Grid,
   Link,
   Button,
@@ -25,16 +25,13 @@ import {
 } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import ThumbUpIcon from "@mui/icons-material/ThumbUp"
-import MenuBookIcon from "@mui/icons-material/MenuBook"
-import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
-import AddIcon from "@mui/icons-material/Add"
 import ProblemItem from "./problem-item"
 import CategoryDialog from "./category-dialog"
 import { fetchDeleteWithAuth, fetchPutWithAuth } from "../services/security/fetchWithAuth"
-import { getProblemsByCategory } from "../services/problems"
+import { putCategory, deleteCategory } from "../services/categoryService"
+
 
 // Styled components
 const ColumnHeaders = styled(Grid)(({ theme }) => ({
@@ -45,21 +42,20 @@ const ColumnHeaders = styled(Grid)(({ theme }) => ({
 }))
 
 
-// onCategoriesChange 
-export default function CategoryList({ categories, isLoggedIn, onCategoriesChange }) {
+
+export default function CategoryList({ categories, isLoggedIn, setCategories, problemsByCategory, setProblemsByCategory }) {
   const [expanded, setExpanded] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [problemsByCategory, setProblemsByCategory] = useState({})
   const [error, setError] = useState("")
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false)
   }
 
-  const handleEditClick = (event, category) => {
+  const handleEditClick = (category) => {
     if (!isLoggedIn) {
       alert("Please login to edit categories");
       return;
@@ -69,7 +65,7 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
     setEditDialogOpen(true)
   }
 
-  const handleDeleteClick = (event, category) => {
+  const handleDeleteClick = (category) => {
     if (!isLoggedIn) {
       alert("Please login to edit categories");
       return;
@@ -79,37 +75,17 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
     setDeleteDialogOpen(true)
   }
 
-  const handleUpdateCategory = async (updatedCategory) => {
-    try {
-      const data = await fetchPutWithAuth(`${process.env.REACT_APP_API_URL}/categories/${updatedCategory.id}`, {
-        categoryName: updatedCategory.categoryName,
-      })
 
-      if (data.ok) {
-        const updated = await data.json()
-        // Update the categories list
-        const updatedCategories = categories.map((cat) => (cat.id === updated.id ? updated : cat))
-        onCategoriesChange(updatedCategories)
-        setEditDialogOpen(false)
-      } else {
-        throw new Error("Failed to update category")
-      }
-    } catch (error) {
-      console.error("Error updating category:", error)
-      setError("Failed to update category. Please try again.")
-    }
-  }
-
-  const handleDeleteCategory = async () => {
+  const handleDeleteCategory = async (selectDeleteCategory) => {
     setLoading(true)
     try {
-      const data = await fetchDeleteWithAuth(`${process.env.REACT_APP_API_URL}/categories/${selectedCategory.id}`)
+      const data = await deleteCategory(selectDeleteCategory.id)
 
-      if (data.ok) {
+      if (data) {
         // Remove the category from the list
-        const updatedCategories = categories.filter((cat) => cat.id !== selectedCategory.id)
-        onCategoriesChange(updatedCategories)
-        setDeleteDialogOpen(false)
+        const updatedCategories = categories.filter((cat) => cat.id !== selectDeleteCategory.id);
+        setCategories(updatedCategories);
+        setDeleteDialogOpen(false);
       } else {
         throw new Error("Failed to delete category")
       }
@@ -120,21 +96,7 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
       setLoading(false)
     }
   }
-
-  // Effect to load problems for each category when categories change
-  useEffect(() => {
-    if (categories && categories.length > 0) {
-        // Use an async function to handle the async fetch within useEffect
-        const fetchProblems = async () => {
-            for (const category of categories) {
-                const problems = await getProblemsByCategory(category.id);
-                console.log(problems);  // This will now log the actual problems
-                setProblemsByCategory((prev) => ({ ...prev, [category.id]: problems }));
-            }
-        };
-        fetchProblems();
-    }
-  }, [categories]);
+  
 
   if (!categories || categories.length === 0) {
     return (
@@ -185,7 +147,7 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
               <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
                 <IconButton
                   size="small"
-                  onClick={(e) => handleEditClick(e, category)}
+                  onClick={() => handleEditClick(category)}
                   disabled={!isLoggedIn}
                   sx={{ mr: 1 }}
                 >
@@ -193,14 +155,17 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
                 </IconButton>
                 <IconButton
                   size="small"
-                  onClick={(e) => handleDeleteClick(e, category)}
+                  onClick={() => handleDeleteClick(category)}
                   disabled={!isLoggedIn}
                   color="error"
                 >
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Box>
-              <Chip label={`${problemsByCategory[category.id]?.length || 0} Problems`} color="white" size="small" />
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full">
+                {`${problemsByCategory[category.id]?.length || 0} Problems`}
+              </span>
+              {/* <Chip label={`${problemsByCategory[category.id]?.length || 0} Problems`} color="white" size="small" /> */}
             </Box>
           </AccordionSummary>
 
@@ -236,6 +201,8 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
                   <ProblemItem 
                     problem={problem} 
                     isLoggedIn={isLoggedIn}
+                    categories={categories}
+                    problemsByCategory={problemsByCategory}
                     setProblemsByCategory={setProblemsByCategory}
                   />
                 </Box>  
@@ -251,16 +218,21 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
         </Accordion>
       ))}
 
+
+
       {/* Edit Category Dialog */}
+      {/* categoryDialogOpen, setCategoryDialogOpen, categories, setCategories, isEdit = false, changeCategory = null */}
       {selectedCategory && (
         <CategoryDialog
-          open={editDialogOpen}
-          onClose={() => setEditDialogOpen(false)}
-          onAddCategory={handleUpdateCategory}
+          categoryDialogOpen={editDialogOpen}
+          setCategoryDialogOpen={setEditDialogOpen}
+          categories={categories}
+          setCategories={setCategories}
           isEdit={true}
-          category={selectedCategory}
+          changeCategory={selectedCategory}
         />
       )}
+
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
@@ -275,7 +247,7 @@ export default function CategoryList({ categories, isLoggedIn, onCategoriesChang
           <Button onClick={() => setDeleteDialogOpen(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleDeleteCategory} color="error" disabled={loading}>
+          <Button onClick={() => handleDeleteCategory(selectedCategory)} color="error" disabled={loading}>
             Delete
           </Button>
         </DialogActions>

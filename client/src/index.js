@@ -12,12 +12,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import Register from "./components/Register";
 // import NotFound from "./components/NotFound";
 // import Home from "./components/Home";
-import Home from "./pages/Home"
-import ProblemsList from "./pages/Problems"
+import HomePage from "./Pages/1-Home";
+import ProblemsPage from "./Pages/2-Problems"
+import SolutionsPage from "./Pages/3-Solutions";
 import { AuthProvider } from "./services/security/AuthContext";
 import RequireAuth from "./services/security/RequireAuth";
-import "./style/ProblemsList.css";
-import "./style/index.css";
+import "./styles/globals.css";
 
 const container = document.getElementById("root");
 
@@ -27,9 +27,10 @@ root.render(
   <AuthProvider>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/problems" element={<ProblemsList />} />
-
+        <Route path="/" element={<HomePage />} />
+        <Route path="/problems" element={<ProblemsPage />} /> 
+        {/* include :problemId to match the parameter correctly */}
+        <Route path="/solutions/:problemId" element={<SolutionsPage />} />
 
         {/* <Route path="/" element={<Home />} /> */}
         {/* <Route path="/" element={<Home />} />

@@ -1,7 +1,5 @@
 // console.log("Database URL:", process.env.DATABASE_URL);
 
-// ==== put your endpoints below ====
-
 // ==== User APIs ====
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -98,7 +96,6 @@ app.post("/logout", async (req, res) => {
 });
 
 
-
 // requireAuth middleware will validate the access token sent by the client and will return the user information within req.auth
 app.get("/me", requireAuth, async (req, res) => {
   const user = await prisma.user.findUnique({
@@ -107,7 +104,6 @@ app.get("/me", requireAuth, async (req, res) => {
   });
   res.json(user);
 });
-
 
 
 
@@ -202,7 +198,6 @@ app.put('/problems/:id', requireAuth, async (req, res) => {
 });
 
 
-
 // Delete a problem
 app.delete('/problems/:id', requireAuth, async (req, res) => {
   try {
@@ -279,7 +274,6 @@ app.delete('/categories/:id', requireAuth, async (req, res) => {
       res.status(400).json({ error: error.message });
   }
 });
-
 
 
 

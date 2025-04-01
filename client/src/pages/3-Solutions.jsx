@@ -6,11 +6,14 @@ import { SolutionsList } from "../components/solution-list"
 import { Button } from "../components/ui/button"
 import { getAllProblems } from "../services/problemServce"
 import { useParams } from "react-router-dom"; // Import useParams
+import { useAuthUser } from "../services/security/AuthContext";
 
 
 export default function SolutionsPage() {
   const { problemId } = useParams(); // Get problemId from URL params
   const [problem, setProblem] = useState(null);
+  const { isAuthenticated, user } = useAuthUser();
+
 
   useEffect(() => {
     const getProblem = async () => {
@@ -70,7 +73,7 @@ export default function SolutionsPage() {
         </div>
       </div>
 
-      <SolutionsList problemId={problemId} />
+      <SolutionsList problemId={problemId} userId={user.id} />
     </div>
   )
 }

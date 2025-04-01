@@ -29,22 +29,24 @@ import {
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { Textarea } from "../components/ui/textarea"
-import { getSolutionsByProblemId } from "../services/solutionService"
+import { getSolutionsByProblemId, createSolution, updateSolution, deleteSolution } from "../services/solutionService"
 
-export function SolutionsList({ problemId }) {
+export function SolutionsList({ problemId, userId }) {
   const [copiedId, setCopiedId] = useState(null)
   const [solutions, setSolutions] = useState([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [currentSolution, setCurrentSolution] = useState(null)
+  const [currentSolution, setCurrentSolution] = useState({id : -1}) 
   const [formData, setFormData] = useState({
+    problemId: Number(problemId), // Convert to integer
+    userId : userId,
     solutionName: "",
     codeSnippet: "",
     timeComplexity: "",
     spaceComplexity: "",
     authorName: "",
   })
-
+  
   // Filter solutions for this problem
   useEffect(() => {
     const fetchSolutions = async () => {
@@ -79,71 +81,87 @@ export function SolutionsList({ problemId }) {
     }))
   }
 
-  const handleAddSolution = (e) => {
+  const handleAddSolution = async (e) => {
     e.preventDefault()
+    
+    // const newSolution = {
+    //   solutionName: formData.solutionName,
+    //   codeSnippet: formData.codeSnippet,
+    //   timeComplexity: formData.timeComplexity,
+    //   spaceComplexity: formData.spaceComplexity,
+    // } 
+    
+    console.log("formData", formData);
 
-    const newSolution = {
-      solutionName: formData.solutionName,
-      codeSnippet: formData.codeSnippet,
-      timeComplexity: formData.timeComplexity,
-      spaceComplexity: formData.spaceComplexity,
-    }
-
-    // we need to add theis using api!!!!
-    setSolutions((prev) => [...prev, newSolution])
-    setIsAddDialogOpen(false)
-    resetForm()
-  }
+    try {
+        const newSolution = await createSolution(formData);
+        setSolutions((prev) => [...prev, newSolution]);
+        setIsAddDialogOpen(false);
+        resetForm();
+      } catch (error) {
+        console.error("Error adding solution:", error);
+      }
+  };
 
   const handleEditClick = (solution) => {
+    if (!solution) {
+        console.error("Attempted to edit a null solution");
+        return;
+    }
+
     setCurrentSolution(solution)
     setFormData({
-      solutionName: solution.solutionName,
-      codeSnippet: solution.codeSnippet,
-      timeComplexity: solution.timeComplexity || "",
-      spaceComplexity: solution.spaceComplexity || "",
-      authorName: solution.authorName || "",
+        problemId: solution.problemId,
+        userId : solution.userId,
+        solutionName: solution.solutionName  || "",
+        codeSnippet: solution.codeSnippet  || "",
+        timeComplexity: solution.timeComplexity  || "",
+        spaceComplexity: solution.spaceComplexity || "",
+        authorName: solution.authorName  || "",
     })
     setIsEditDialogOpen(true)
   }
 
-  const handleUpdateSolution = (e) => {
-    e.preventDefault()
 
-    // we need to update theis using api!!!!
-    setSolutions((prev) =>
-      prev.map((solution) =>
-        solution.id === currentSolution.id
-          ? {
-              ...solution,
-              solutionName: formData.solutionName,
-              codeSnippet: formData.codeSnippet,
-              timeComplexity: formData.timeComplexity,
-              spaceComplexity: formData.spaceComplexity,
-              authorName: formData.authorName || "Anonymous",
-            }
-          : solution,
-      ),
-    )
+  const handleUpdateSolution = async (e) => {
+    e.preventDefault();
+    if (!currentSolution || currentSolution.id === undefined) {
+      console.error("No valid solution selected for update");
+      return;
+    }
+    try {
+      const updatedSolution = await updateSolution(currentSolution.id, formData);
+      setSolutions((prev) =>
+        prev.map((solution) => (solution.id === currentSolution.id ? updatedSolution : solution))
+      );
+      setIsEditDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error("Error updating solution:", error);
+    }
+  };
+  
 
-    setIsEditDialogOpen(false)
-    resetForm()
-  }
-
-  const handleDeleteSolution = (solutionId) => {
-    // we need to update theis using api!!!!
-    setSolutions((prev) => prev.filter((solution) => solution.id !== solutionId))
-  }
+  const handleDeleteSolution = async (solutionId) => {
+    try {
+    await deleteSolution(solutionId);
+    setSolutions((prev) => prev.filter((solution) => solution.id !== solutionId));
+    } catch (error) {
+    console.error("Error deleting solution:", error);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
-      solutionName: "",
-      codeSnippet: "",
-      timeComplexity: "",
-      spaceComplexity: "",
-      authorName: "",
+        problemId: Number(problemId), // Convert to integer
+        userId : userId,
+        solutionName: "",
+        codeSnippet: "",
+        timeComplexity: "",
+        spaceComplexity: "",
+        authorName: "",
     })
-    setCurrentSolution(null)
+    setCurrentSolution({id : -1})
   }
 
   const openAddDialog = () => {

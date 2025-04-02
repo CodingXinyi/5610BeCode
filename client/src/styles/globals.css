@@ -58,3 +58,194 @@
   }
 }
 
+/* Material Design inspired styles */
+.material-card {
+  @apply bg-card rounded-lg shadow-md transition-shadow hover:shadow-lg;
+}
+
+.material-btn-primary {
+  @apply bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-sm hover:shadow transition-all;
+}
+
+.material-btn-secondary {
+  @apply bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-md shadow-sm hover:shadow transition-all;
+}
+
+.material-btn-danger {
+  @apply bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md shadow-sm hover:shadow transition-all;
+}
+
+.material-fab {
+  @apply fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-10;
+}
+
+.difficulty-easy {
+  @apply bg-green-500 text-white;
+}
+
+.difficulty-medium {
+  @apply bg-yellow-500 text-white;
+}
+
+.difficulty-hard {
+  @apply bg-red-500 text-white;
+}
+
+.category-chip {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.animate-float-1 {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: float 12s ease-in-out infinite;
+}
+
+.animate-float-3 {
+  animation: float 10s ease-in-out infinite;
+}
+
+.animate-float-4 {
+  animation: float 14s ease-in-out infinite;
+}
+
+.animate-float-5 {
+  animation: float 9s ease-in-out infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Fun animations */
+.animate-bounce-custom {
+  animation: bounce-custom 3s infinite;
+}
+
+@keyframes bounce-custom {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.1);
+  }
+}
+
+.animate-bounce-text {
+  animation: bounce-text 5s infinite;
+}
+
+@keyframes bounce-text {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+.animate-float-bubble {
+  animation: float-bubble 15s linear infinite;
+}
+
+@keyframes float-bubble {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Confetti animation */
+.confetti-container {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  top: -10px;
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+

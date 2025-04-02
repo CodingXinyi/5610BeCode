@@ -1,25 +1,12 @@
-// /** @type {import('tailwindcss').Config} */
-// module.exports = {
-//   content: [],
-//   theme: {
-//     extend: {},
-//   },
-//   plugins: [],
-// }
-
-
 /** @type {import('tailwindcss').Config} */
-
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 module.exports = {
   content: [
-    // "./src/**/*.{js,jsx,ts,tsx}", 
-    // "./src/**/**/*.{js,jsx}", 
-    // Make sure to include the path to your components folder
+    "./src/**/*.{js,jsx,ts,tsx}",
     "./src/components/ui/**/*.{js,jsx}",
-    "./src/components/solution-list.jsx",
-    "./src/Pages/3-Solutions.jsx"
+    "./src/components/**/*.{js,jsx}",
+    "./src/Pages/**/*.{js,jsx}",
   ],
   theme: {
     extend: {
@@ -47,9 +34,20 @@ module.exports = {
       borderRadius: {
         DEFAULT: "var(--radius)",
       },
+      boxShadow: {
+        material: "0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06)",
+        "material-hover": "0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)",
+      },
+      keyframes: {
+        fadeIn: {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+      },
+      animation: {
+        "fade-in": "fadeIn 0.2s ease-in-out",
+      },
     },
   },
   plugins: [],
 };
-
-

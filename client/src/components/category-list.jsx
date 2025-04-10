@@ -14,21 +14,15 @@ import {
 import { Edit, Trash2, FolderOpen } from "lucide-react"
 import ProblemItem from "./problem-item"
 import CategoryDialog from "./category-dialog"
-import { fetchDeleteWithAuth, fetchPutWithAuth } from "../services/security/fetchWithAuth"
 import { putCategory, deleteCategory } from "../services/categoryService"
 
 
 export default function CategoryList({ categories, isLoggedIn, setCategories, problemsByCategory, setProblemsByCategory }) {
-  const [expanded, setExpanded] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-
-  const handleChange = (panel) => (event, isExpanded) => {
-    setExpanded(isExpanded ? panel : false)
-  }
 
   const handleEditClick = (category) => {
     if (!isLoggedIn) {
@@ -89,10 +83,12 @@ export default function CategoryList({ categories, isLoggedIn, setCategories, pr
     <div className="space-y-4 min-h-[400px]">
       {categories.map((category, index) => (
         <Accordion
-          type="single"
+          type="multiple"
           collapsible
           key={category.id}
           className="material-card overflow-hidden animate-fade-in"
+          // defaultValue={index === 0 ? `panel-${category.id}` : undefined}
+          defaultValue={categories.map((category) => `panel-${category.id}`)}
         >
           <AccordionItem value={`panel-${category.id}`} className="border-0 min-h-[60px]">
             <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 bg-muted">

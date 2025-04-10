@@ -249,3 +249,11 @@
   }
 }
 
+
+pre {
+  white-space: pre-wrap;  /* Ensures long lines wrap correctly */
+  word-wrap: break-word;  /* Breaks long words that can't fit on one line */
+  background-color: #f4f4f4; /* Optional styling */
+  padding: 10px;  /* Optional styling */
+  border-radius: 5px; /* Optional styling */
+}

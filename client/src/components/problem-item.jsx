@@ -4,18 +4,30 @@ import { useState } from "react"
 import { Button } from "../components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip"
 import { Badge } from "../components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "../components/ui/dialog"
 import { Edit, Book, ThumbsDown, ThumbsUp, Trash, Lightbulb } from "lucide-react"
-import { deleteProblems, putProblems, addOrUpdateProblemToCategoryMap } from "../services/problemServce"
+import { deleteProblems, putProblems, addOrUpdateProblemToCategoryMap } from "../services/problemService"
 import ProblemDialog from "./problem-dialog"
 import { useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils"
 
 
-export function ProblemItem({ problem, onEdit, isLoggedIn, categories, problemsByCategory, setProblemsByCategory }) {
+export function ProblemItem({ problem, isLoggedIn, categories, setProblemsByCategory }) {
   const [votes, setVotes] = useState(problem.voteCnt) 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedProblem, setSelectedProblem] = useState(null)
   const navigate = useNavigate();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [deleteProblemDialogOpen, setDeleteProblemDialogOpen] = useState(false)
+  const [problemToDelete, setProblemToDelete] = useState(null);
+  const [loading, setLoading] = useState(false);
 
 
   const handleVote = (value) => {
@@ -25,20 +37,13 @@ export function ProblemItem({ problem, onEdit, isLoggedIn, categories, problemsB
   }
 
 
-  // const handleVote = async (value) => {
-  //   setVotes((prevVotes) => {
-  //     const updatedVotes = prevVotes + value;
-  //     putProblems(problem.id, { "voteCnt": updatedVotes }); // No need to await here
-  //     // return updatedVotes;
-  //   });
-  // };
-
-  
-  const handleEdit = () => {
-    if (onEdit) {
-      onEdit(problem)
+  const handleSolutionClick = () => {
+    if (!isLoggedIn) {
+      setShowLoginPrompt(true);
+    } else {
+      navigate(`/solutions/${problem.id}`);
     }
-  }
+  };
 
 
   const handleEditProblemClick = (problem) => {
@@ -52,28 +57,34 @@ export function ProblemItem({ problem, onEdit, isLoggedIn, categories, problemsB
   }
 
 
-  const handleDeleteProblem = async (problemId, categoryId) => {
-    if (!window.confirm("Are you sure you want to delete this problem?")) {
-      return; // Exit if the user cancels the deletion
-    }
+  const openDeleteDialog = (problem) => {
+    setProblemToDelete(problem);
+    setDeleteProblemDialogOpen(true);
+  };
   
+  const confirmDeleteProblem = async () => {
+    if (!problemToDelete) return;
+  
+    setLoading(true);
     try {
-      await deleteProblems(problemId);
+      await deleteProblems(problemToDelete.id);
   
-      // Update state: remove deleted problem from the corresponding category
       setProblemsByCategory((prev) => {
-        const updatedCategory = prev[categoryId]?.filter(
-          (problem) => problem.id !== problemId
-        ) || [];
-  
-        return { ...prev, [categoryId]: updatedCategory };
+        const updated = (prev[problemToDelete.categoryId] || []).filter(
+          (p) => p.id !== problemToDelete.id
+        );
+        return { ...prev, [problemToDelete.categoryId]: updated };
       });
   
+      setDeleteProblemDialogOpen(false);
+      setProblemToDelete(null);
     } catch (error) {
       console.error("Error deleting problem:", error.message);
       alert("Failed to delete problem. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  }  
+  };
 
 
   const getDifficultyColor = (difficulty) => {
@@ -89,6 +100,7 @@ export function ProblemItem({ problem, onEdit, isLoggedIn, categories, problemsB
     }
   }
 
+  
   return (
     <div className="grid grid-cols-5 gap-4 p-4 items-center hover:bg-muted/50 transition-colors">
       <div className="text-sm font-medium truncate">{problem.problemName}</div>
@@ -111,7 +123,7 @@ export function ProblemItem({ problem, onEdit, isLoggedIn, categories, problemsB
 
       <div className="flex justify-center">
         <button
-          onClick={() => navigate(`/solutions/${problem.id}`)}
+          onClick={handleSolutionClick}
           className="flex items-center text-green-600 hover:text-green-800"
         >
           <Lightbulb className="h-4 w-4 mr-1" />
@@ -181,7 +193,7 @@ export function ProblemItem({ problem, onEdit, isLoggedIn, categories, problemsB
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => handleDeleteProblem(problem.id, problem.categoryId)}
+                onClick={() => openDeleteDialog(problem)}
                 disabled={!isLoggedIn}
                 className="h-8 w-8 text-primary"
               >
@@ -217,6 +229,51 @@ export function ProblemItem({ problem, onEdit, isLoggedIn, categories, problemsB
           editProblem={problem}
         />
       )}
+
+      {showLoginPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white w-full max-w-sm mx-4 p-6 rounded-2xl shadow-xl text-center">
+            <p className="text-lg font-medium mb-6">Please log in to view the solution! 😎 </p>
+            <div className="flex justify-center space-x-4">
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl transition duration-150"
+                onClick={() => {
+                  navigate("/home"); // Redirect to login page
+                  setShowLoginPrompt(false);
+                }}
+              >
+                Login
+              </button>
+              <button
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2 rounded-xl transition duration-150"
+                onClick={() => setShowLoginPrompt(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={deleteProblemDialogOpen} onOpenChange={setDeleteProblemDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Problem</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{problemToDelete?.problemName}"?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setDeleteProblemDialogOpen(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteProblem} disabled={loading}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 }

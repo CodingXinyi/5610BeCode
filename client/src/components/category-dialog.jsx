@@ -1,8 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, CircularProgress } from "@mui/material"
-import { createCategory, putCategory, deleteCategory } from "../services/categoryService"
+import { createCategory, putCategory } from "../services/categoryService"
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog"
+
 
 export default function CategoryDialog({ categoryDialogOpen, setCategoryDialogOpen, categories, setCategories, isEdit = false, changeCategory = null }) {
   const [categoryName, setCategoryName] = useState("")
@@ -104,32 +115,40 @@ export default function CategoryDialog({ categoryDialogOpen, setCategoryDialogOp
 
 
   return (
-    <Dialog open={categoryDialogOpen} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{isEdit ? "Edit Category" : "Add New Category"}</DialogTitle>
-      <form onSubmit={handleSubmit}>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Category Name"
-            type="text"
-            fullWidth
-            value={categoryName}
-            onChange={(e) => setCategoryName(e.target.value)}
-            error={!!error}
-            helperText={error}
-            disabled={loading}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="contained" color="primary" disabled={loading}>
-            {loading ? <CircularProgress size={24} /> : isEdit ? "Update" : "Add Category"}
-          </Button>
-        </DialogActions>
-      </form>
+    <Dialog open={categoryDialogOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? "Edit Category" : "Add New Category"}</DialogTitle>
+          <DialogDescription>
+            {isEdit ? "Update an existing category name." : "Enter the new category name below."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="categoryName">Category Name</Label>
+            <Input
+              id="categoryName"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              disabled={loading}
+              required
+            />
+            {error && <p className="text-sm text-red-500">{error}</p>}
+          </div>
+
+          <DialogFooter className="pt-4">
+            <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? (
+                <div className="h-4 w-4 animate-spin border-2 border-t-transparent border-white rounded-full" />
+              ) : isEdit ? "Update" : "Add Category"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
     </Dialog>
   )
 }

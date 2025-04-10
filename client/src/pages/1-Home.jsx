@@ -14,22 +14,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-import { Code, ChevronRight, Terminal, Database, Server, Cpu, Layers } from "lucide-react";
-import { Star, Sparkles, Heart, Rocket, Zap, Gift, Crown } from "lucide-react"
+import { Sparkles, Heart } from "lucide-react"
 
 
 // Animated code snippet component
 const AnimatedCodeSnippet = () => {
   const [currentLine, setCurrentLine] = useState(0);
   const codeLines = [
-    "function solve(array) {",
-    "  const result = [];",
-    "  for (let i = 0; i < array.length; i++) {",
-    "    if (array[i] % 2 === 0) {",
-    "      result.push(array[i]);",
+    "function pickSnacks(snacks) {",
+    "  const favorites = [];",
+    "  for (let i = 0; i < snacks.length; i++) {",
+    "    if (snacks[i].includes('boba🧋')) {",
+    "      favorites.push(snacks[i]);",
     "    }",
     "  }",
-    "  return result;",
+    "  return favorites;",
     "}",
   ];
 
@@ -117,10 +116,11 @@ export default function HomePage() {
             navigate("/problems")
           }, 1500)
         } else {
-          setError("Oops! Email or password doesn't match. Try again! 🔄")
+          alert("Oops! Email or password doesn't match. Try again! 🔄")
         }
       } else {
-        await register(name, email, password)
+        // email, password, username
+        await register( email, password, name )
         setOpen(false)
         // Show success message
         alert("Yay! Your account is created! 🎉 Please log in to continue.")
@@ -139,7 +139,7 @@ export default function HomePage() {
     { emoji: "💻", delay: 0.5, position: { top: "25%", left: "85%" } },
     { emoji: "🎮", delay: 1, position: { top: "70%", left: "15%" } },
     { emoji: "🧩", delay: 1.5, position: { top: "60%", left: "80%" } },
-    { emoji: "⭐", delay: 2, position: { top: "40%", left: "5%" } },
+    { emoji: "⭐", delay: 2, position: { top: "5%", left: "92%" } },
   ]
 
   return (
@@ -150,15 +150,6 @@ export default function HomePage() {
       {characters.map((char, index) => (
         <BouncingCharacter key={index} emoji={char.emoji} delay={char.delay} position={char.position} />
       ))}
-
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Code className="h-6 w-6 text-black" />
-            <h2 className="text-xl font-medium">BeCoding 🐭🐱🚀</h2>
-          </div>
-        </div>
-      </header>
 
       {/* Confetti effect when logging in */}
       {showConfetti && (
@@ -185,20 +176,6 @@ export default function HomePage() {
           </div>
         </div>
       )}
-
-
-      {/* <main className="flex-1 relative z-10 py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-6">Master Coding Challenges with Ease</h1>
-          <p className="text-lg text-muted-foreground mb-8">Organize, track, and solve coding problems to improve your skills and prepare for technical interviews.</p>
-          <AnimatedCodeSnippet />
-          <div className="flex justify-center gap-4 mt-6">
-            <Button size="lg" onClick={() => navigate("/problems")}>Get Started as Guest</Button>
-            <Button variant="outline" size="lg" onClick={() => handleOpen(true)}>Sign In</Button>
-            <Button variant="outline" size="lg" onClick={() => handleOpen(false)}>Create Account</Button>
-          </div>
-        </div>
-      </main> */}
 
 
       <main className="flex-1 relative z-10">

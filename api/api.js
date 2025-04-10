@@ -10,6 +10,8 @@ import cors from "cors";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
+import axios from "axios"; // Importing axios using ESM syntax
+
 
 const app = express();
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
@@ -75,9 +77,9 @@ app.post("/login", async (req, res) => {
   // if email and password match, we create the payload and token 
   const payload = { userId: user.id };
   // encrypt the user.id object here
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "60m" });
   // instruct the client side to create a cookie with this value & options
-  res.cookie("token", token, { httpOnly: true, maxAge: 15 * 60 * 1000 });
+  res.cookie("token", token, { httpOnly: true, maxAge: 60 * 60 * 1000 });
 
   // ensure that the password is not sent to the client
   const userData = {
@@ -277,7 +279,7 @@ app.delete('/categories/:id', requireAuth, async (req, res) => {
 
 
 
-// ==== Problem APIs ====
+// ==== Solution APIs ====
 // Create a new solution
 app.post('/solutions', requireAuth, async (req, res) => {
   try {
@@ -298,6 +300,7 @@ app.post('/solutions', requireAuth, async (req, res) => {
   }
 });
 
+
 // Get solutions by problem ID
 app.get('/solutions/problem/:problemId', requireAuth, async (req, res) => {
   try {
@@ -310,6 +313,7 @@ app.get('/solutions/problem/:problemId', requireAuth, async (req, res) => {
       res.status(500).json({ error: error.message });
   }
 });
+
 
 // Update a solution by ID
 app.put('/solutions/:id', requireAuth, async (req, res) => {
@@ -345,6 +349,7 @@ app.put('/solutions/:id', requireAuth, async (req, res) => {
   }
 });
 
+
 // Delete a solution by ID
 app.delete('/solutions/:id', requireAuth, async (req, res) => {
   try {
@@ -360,7 +365,57 @@ app.delete('/solutions/:id', requireAuth, async (req, res) => {
 
 
 
+// ==== External APIs - LeetCode ====
+// ==== LeetCode Problem Fetch API ====
+app.get("/leetcode/:slug", async (req, res) => {
+  const { slug } = req.params;
 
+  const query = {
+    query: `
+      query getQuestionDetail($titleSlug: String!) {
+        question(titleSlug: $titleSlug) {
+          title
+          titleSlug
+          difficulty
+          content
+        }
+      }
+    `,
+    variables: {
+      titleSlug: slug
+    }
+  };
+
+  try {
+    const response = await axios.post("https://leetcode.com/graphql", query, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = response.data.data.question;
+
+    if (!data) {
+      return res.status(404).json({ error: "Problem not found" });
+    }
+
+    res.json({
+      title: data.title,
+      slug: data.titleSlug,
+      difficulty: data.difficulty,
+      description: data.content,
+      link: `https://leetcode.com/problems/${data.titleSlug}/description/`
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+
+// ==== Initialize Port ====
 app.listen(8000, () => {
   console.log("Server running on http://localhost:8000 🎉 🚀");
 });

@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "../components/ui/button"
-import { Card } from "../components/ui/card" 
-import { Plus, LogIn, LogOut, Code } from "lucide-react";
+import { Plus, Lightbulb } from "lucide-react";
 import CategoryDialog from "../components/category-dialog"
 import ProblemDialog from "../components/problem-dialog"
 import CategoryList from "../components/category-list"
 import { useAuthUser } from "../services/security/AuthContext";
 import { useNavigate } from "react-router-dom"; 
-import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problemServce"
+import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problemService"
 
 
 function ProblemsPage() {
@@ -20,19 +19,6 @@ function ProblemsPage() {
   const [openProblemDialog, setOpenProblemDialog] = useState(false)
   const { isAuthenticated, loading, user, login, register, logout } = useAuthUser();
   const navigate = useNavigate();
-
-  // Check if user is logged in
-//   The empty dependency array [] means the effect runs only once when the component mounts.
-
-// If isAuthenticated updates later, setIsLoggedIn(isAuthenticated); won’t run again, so the component might not reflect the latest auth state.
-  // useEffect(() => {
-  //   // This would be replaced with your actual auth check
-  //   const checkAuth = () => {
-  //     setIsLoggedIn(isAuthenticated)
-  //   }
-
-  //   checkAuth()
-  // }, [])
 
   useEffect(() => {
     setIsLoggedIn(isAuthenticated);
@@ -59,6 +45,7 @@ function ProblemsPage() {
     fetchCategories()
   }, [])
 
+
   // Effect to load problems for each category when categories change
   useEffect(() => {
     if (categories && categories.length > 0) {
@@ -74,18 +61,7 @@ function ProblemsPage() {
     }
   }, [categories]);
 
-  console.log("problems page", problemsByCategory);
-
-
-  const handleLogout = async (e) => {
-    e.preventDefault();
-    await logout();
-    navigate("/");
-  };
-
-  const handleLoginRedirect = () => {
-    navigate("/");
-  }
+  // console.log("problems page", problemsByCategory);
 
   const handleAddCategory = () => {
     if (!isLoggedIn) {
@@ -107,30 +83,6 @@ function ProblemsPage() {
     
     <div className="flex flex-col min-h-screen bg-white">
     {/* <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50 flex flex-col relative"> */}
-      {/* <header className="bg-blue-50 shadow-sm sticky top-0 z-10"> */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Code className="h-6 w-6 text-black" />
-            <h2 className="text-xl font-medium">BeCoding 🐭🐱🚀</h2>
-          </div>
-          {isLoggedIn ? (
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              className="flex items-center gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-          ) : (
-            <Button onClick={handleLoginRedirect} className="material-btn-primary px-4 py-2">
-              <LogIn className="h-4 w-4 mr-2" />
-              Login
-            </Button>
-          )}
-        </div>
-      </header>
 
       <main className="container mx-auto px-4 py-6 flex-1">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">

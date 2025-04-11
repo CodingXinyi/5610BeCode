@@ -27,6 +27,7 @@
     "react-dom": "18.2.0",
     "react-router-dom": "^6.26.2",
     "react-scripts": "^5.0.1",
+    "react-syntax-highlighter": "^15.6.1",
     "tailwind-merge": "^2.6.0",
     "tailwind-variants": "^1.0.0",
     "tailwindcss-animate": "^1.0.7",

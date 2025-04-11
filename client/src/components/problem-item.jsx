@@ -12,11 +12,12 @@ import {
   DialogDescription,
   DialogFooter
 } from "../components/ui/dialog"
-import { Edit, Book, ThumbsDown, ThumbsUp, Trash, Lightbulb } from "lucide-react"
+import { Edit, Book, Link, ExternalLink, ThumbsDown, ThumbsUp, Trash, Lightbulb } from "lucide-react"
 import { deleteProblems, putProblems, addOrUpdateProblemToCategoryMap } from "../services/problemService"
 import ProblemDialog from "./problem-dialog"
 import { useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils"
+import LoginPrompt from "./login-prompt"
 
 
 export function ProblemItem({ problem, isLoggedIn, categories, setProblemsByCategory }) {
@@ -111,13 +112,13 @@ export function ProblemItem({ problem, isLoggedIn, categories, setProblemsByCate
 
       <div className="flex justify-center">
         <a
-          href={problem.source || "https://leetcode.com/problems/random"}
+          href={problem.source || "https://leetcode.com/problems"}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center text-blue-600 hover:text-blue-800"
         >
-          <Book className="h-4 w-4 mr-1" />
-          Source
+          <ExternalLink className="h-4 w-4 mr-1" />
+          Leetcode
         </a>
       </div>
 
@@ -205,30 +206,7 @@ export function ProblemItem({ problem, isLoggedIn, categories, setProblemsByCate
         </TooltipProvider>
       </div>
 
-      {selectedProblem && (
-        <ProblemDialog
-          open={editDialogOpen}
-          onClose={() => setEditDialogOpen(false)}
-          categories={categories}
-          onChangeProblem={(newProblem) => {
-            setProblemsByCategory((prev) => {
-              const categoryProblems = [...(prev[newProblem.categoryId] || [])]
-              const index = categoryProblems.findIndex((p) => p.id === newProblem.id)
-
-              if (index !== -1) {
-                categoryProblems[index] = newProblem
-              } else {
-                categoryProblems.push(newProblem)
-              }
-
-              return { ...prev, [newProblem.categoryId]: categoryProblems }
-            })
-
-            setEditDialogOpen(false)
-          }}
-          editProblem={problem}
-        />
-      )}
+      <LoginPrompt show={showLoginPrompt} onClose={() => setShowLoginPrompt(false)} />
 
       {showLoginPrompt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

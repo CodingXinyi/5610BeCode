@@ -10,7 +10,7 @@ export const createCategory = async (data) => {
         });
 
         const responseData = await response.json();
-        console.log("createCategory API Response:", responseData);
+        // console.log("createCategory API Response:", responseData);
 
         if (!response.ok) {
             throw new Error(`Error creating category: ${responseData.error || response.statusText}`);

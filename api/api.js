@@ -46,7 +46,7 @@ app.get("/ping", (req, res) => {
 });
 
 app.post("/register", async (req, res) => {
-  const {  email, password, username } = req.body;
+  const {  email, password, userName } = req.body;
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     return res.status(400).json({ error: "User already exists" });
@@ -54,8 +54,8 @@ app.post("/register", async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = await prisma.user.create({
-    data: { username, email, password: hashedPassword },
-    select: { id: true, email: true, username: true },
+    data: { userName, email, password: hashedPassword },
+    select: { id: true, email: true, userName: true },
   });
 
   res.json(newUser);
@@ -85,7 +85,7 @@ app.post("/login", async (req, res) => {
   const userData = {
     id: user.id,
     email: user.email,
-    username: user.username,
+    userName: user.userName,
   };
 
   res.json(userData);
@@ -102,7 +102,7 @@ app.post("/logout", async (req, res) => {
 app.get("/me", requireAuth, async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.userId },
-    select: { id: true, email: true, username: true },
+    select: { id: true, email: true, userName: true },
   });
   res.json(user);
 });

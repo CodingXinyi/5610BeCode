@@ -7,8 +7,8 @@ import CategoryDialog from "../components/category-dialog"
 import ProblemDialog from "../components/problem-dialog"
 import CategoryList from "../components/category-list"
 import { useAuthUser } from "../services/security/AuthContext";
-import { useNavigate } from "react-router-dom"; 
 import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problemService"
+import LoginPrompt from "../components/login-prompt";
 
 
 function ProblemsPage() {
@@ -18,7 +18,7 @@ function ProblemsPage() {
   const [openCategoryDialog, setOpenCategoryDialog] = useState(false)
   const [openProblemDialog, setOpenProblemDialog] = useState(false)
   const { isAuthenticated, loading, user, login, register, logout } = useAuthUser();
-  const navigate = useNavigate();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => {
     setIsLoggedIn(isAuthenticated);
@@ -35,7 +35,7 @@ function ProblemsPage() {
           headers: { "Content-Type": "application/json" }
         });
         const data = await response.json()
-        console.log("category data:", data)
+        // console.log("category data:", data)
         setCategories(data)
       } catch (error) {
         console.error("Error fetching categories:", error)
@@ -53,7 +53,7 @@ function ProblemsPage() {
         const fetchProblems = async () => {
             for (const category of categories) {
                 const problems = await getProblemsByCategory(category.id);
-                console.log(problems);  // This will now log the actual problems
+                // console.log(problems);  // This will now log the actual problems
                 setProblemsByCategory((prev) => ({ ...prev, [category.id]: problems }));
             }
         };
@@ -65,7 +65,7 @@ function ProblemsPage() {
 
   const handleAddCategory = () => {
     if (!isLoggedIn) {
-      alert("Please login to add a category")
+      setShowLoginPrompt(true);
       return
     }
     setOpenCategoryDialog(true)
@@ -73,7 +73,7 @@ function ProblemsPage() {
 
   const handleAddProblem = () => {
     if (!isLoggedIn) {
-      alert("Please login to add a problem")
+      setShowLoginPrompt(true);
       return
     }
     setOpenProblemDialog(true)
@@ -108,6 +108,7 @@ function ProblemsPage() {
         />
       </main>
       
+      <LoginPrompt show={showLoginPrompt} onClose={() => setShowLoginPrompt(false)} />
 
       {/* categoryDialogOpen, setCategoryDialogOpen, categories, setCategories, isEdit = false, changeCategory = null */}
       <CategoryDialog

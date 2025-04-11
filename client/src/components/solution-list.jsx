@@ -29,22 +29,27 @@ import {
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { Textarea } from "../components/ui/textarea"
+// import { Copy } from 'react-feather';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { twilight, a11yDark, solarizedlight, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { getSolutionsByProblemId, createSolution, updateSolution, deleteSolution } from "../services/solutionService"
+import { useAuthUser } from "../services/security/AuthContext";
 
-export function SolutionsList({ problemId, userId }) {
+
+export function SolutionsList({ problemId }) {
   const [copiedId, setCopiedId] = useState(null)
   const [solutions, setSolutions] = useState([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentSolution, setCurrentSolution] = useState({id : -1}) 
+  const { isAuthenticated, user } = useAuthUser();
   const [formData, setFormData] = useState({
     problemId: Number(problemId), // Convert to integer
-    userId : userId,
+    userId : user.id,
     solutionName: "",
     codeSnippet: "",
     timeComplexity: "",
-    spaceComplexity: "",
-    authorName: "",
+    spaceComplexity: ""
   })
   
   // Filter solutions for this problem
@@ -84,14 +89,7 @@ export function SolutionsList({ problemId, userId }) {
   const handleAddSolution = async (e) => {
     e.preventDefault()
     
-    // const newSolution = {
-    //   solutionName: formData.solutionName,
-    //   codeSnippet: formData.codeSnippet,
-    //   timeComplexity: formData.timeComplexity,
-    //   spaceComplexity: formData.spaceComplexity,
-    // } 
-    
-    console.log("formData", formData);
+    // console.log("formData", formData);
 
     try {
         const newSolution = await createSolution(formData);
@@ -117,7 +115,6 @@ export function SolutionsList({ problemId, userId }) {
         codeSnippet: solution.codeSnippet  || "",
         timeComplexity: solution.timeComplexity  || "",
         spaceComplexity: solution.spaceComplexity || "",
-        authorName: solution.authorName  || "",
     })
     setIsEditDialogOpen(true)
   }
@@ -154,12 +151,11 @@ export function SolutionsList({ problemId, userId }) {
   const resetForm = () => {
     setFormData({
         problemId: Number(problemId), // Convert to integer
-        userId : userId,
+        userId : user.id,
         solutionName: "",
         codeSnippet: "",
         timeComplexity: "",
         spaceComplexity: "",
-        authorName: "",
     })
     setCurrentSolution({id : -1})
   }
@@ -232,16 +228,6 @@ export function SolutionsList({ problemId, userId }) {
                     />
                   </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="authorName">Your Name</Label>
-                  <Input
-                    id="authorName"
-                    name="authorName"
-                    value={formData.authorName}
-                    onChange={handleInputChange}
-                    placeholder="Anonymous"
-                  />
-                </div>
               </div>
               <DialogFooter>
                 <Button type="submit">Submit Solution</Button>
@@ -300,15 +286,6 @@ export function SolutionsList({ problemId, userId }) {
                     />
                   </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-authorName">Your Name</Label>
-                  <Input
-                    id="edit-authorName"
-                    name="authorName"
-                    value={formData.authorName}
-                    onChange={handleInputChange}
-                  />
-                </div>
               </div>
               <DialogFooter>
                 <Button type="submit">Update Solution</Button>
@@ -331,8 +308,8 @@ export function SolutionsList({ problemId, userId }) {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle>{solution.solutionName}</CardTitle>
-                    <CardDescription>
-                      <div className="flex gap-4 text-sm">
+                    <CardDescription className="mt-5">
+                      <div className="flex gap-4 text-sm font-bold">
                         <div>Time Complexity: {solution.timeComplexity || "Not specified"}</div>
                         <div>Space Complexity: {solution.spaceComplexity || "Not specified"}</div>
                       </div>
@@ -372,29 +349,44 @@ export function SolutionsList({ problemId, userId }) {
                   </div>
                 </div>
               </CardHeader>
+
               <CardContent>
                 <div className="relative">
-                  <pre className="p-4 bg-muted rounded-lg overflow-x-auto">
-                    <code className="text-sm">{solution.codeSnippet}</code>
-                  </pre>
+                  {/* Code Block with Syntax Highlighting */}
+                  <SyntaxHighlighter
+                    language="python" // Adjust this based on the language of the code
+                    style={vscDarkPlus} // Use the 'vscDarkPlus' theme for syntax highlighting
+                    className="p-4 bg-gray-900 rounded-lg overflow-x-auto text-sm font-mono"
+                  >
+                    {solution.codeSnippet}
+                  </SyntaxHighlighter>
+
+                  {/* Copy Button */}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-2 right-2"
+                    className="absolute top-2 right-2 p-2 hover:bg-gray-700 rounded-md text-white"
                     onClick={() => handleCopyCode(solution.id, solution.codeSnippet)}
                   >
-                    <Copy className="h-4 w-4" />
+                    <Copy className="h-4 w-4 text-white" />
                     <span className="sr-only">Copy code</span>
                   </Button>
+
+                  {/* Copied Notification */}
                   {copiedId === solution.id && (
-                    <div className="absolute top-2 right-12 bg-background text-sm py-1 px-2 rounded shadow">
+                    <div className="absolute top-2 right-12 bg-green-600 text-white text-sm py-1 px-2 rounded-md shadow-lg">
                       Copied!
                     </div>
                   )}
                 </div>
               </CardContent>
-              <CardFooter>
-                <div className="text-sm text-muted-foreground">Added by: {solution.authorName || "Anonymous"}</div>
+              <CardFooter className="flex items-center"> {/* Consider using flex for better alignment */}
+                <div className="text-sm text-muted-foreground mr-4"> {/* Add margin-right */}
+                  <span>Added by:</span> {solution.userId || "Anonymous"}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <span>Created At:</span> {new Date(solution.createdAt).toLocaleString() || "Not specified"}
+                </div>
               </CardFooter>
             </Card>
           ))}

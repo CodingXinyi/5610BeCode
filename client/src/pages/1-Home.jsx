@@ -88,6 +88,8 @@ export default function HomePage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("")
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
 
   const handleOpen = (loginMode) => {
@@ -100,12 +102,15 @@ export default function HomePage() {
     setEmail("");
     setPassword("");
     setName("");
+    setError("");
+    setSuccessMessage("")
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError("")
+    setSuccessMessage("")
 
     try {
       if (isLogin) {
@@ -116,14 +121,18 @@ export default function HomePage() {
             navigate("/problems")
           }, 1500)
         } else {
-          alert("Oops! Email or password doesn't match. Try again! 🔄")
+          setError("Oops! Email or password doesn't match. Try again! 🔄")
         }
       } else {
         // email, password, username
-        await register( email, password, name )
-        setOpen(false)
-        // Show success message
-        alert("Yay! Your account is created! 🎉 Please log in to continue.")
+        const success = await register( email, password, name)
+        if (success) {
+          // Show success message
+          setSuccessMessage("🎉 Your account has been created! Please log in to continue.")
+          setShowSuccessPopup(true)
+        } else {
+          setError(" Try again! 🔄")
+        }
       }
     } catch (error) {
       console.error("Auth error:", error)
@@ -136,8 +145,8 @@ export default function HomePage() {
   // Characters for the bouncing animation
   const characters = [
     { emoji: "🚀", delay: 0, position: { top: "20%", left: "33%" } },
-    { emoji: "💻", delay: 0.5, position: { top: "25%", left: "85%" } },
-    { emoji: "🎮", delay: 1, position: { top: "70%", left: "15%" } },
+    { emoji: "💻", delay: 0.5, position: { top: "55%", left: "45%" } },
+    { emoji: "🐱🐭", delay: 1, position: { top: "70%", left: "15%" } },
     { emoji: "🧩", delay: 1.5, position: { top: "60%", left: "80%" } },
     { emoji: "⭐", delay: 2, position: { top: "5%", left: "92%" } },
   ]
@@ -184,11 +193,11 @@ export default function HomePage() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center gap-12">
               <div className="md:w-1/2 space-y-6 text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl font-bold leading-tight animate-bounce-text">
-                  <span className="text-green-500">Welcome</span> to <span className="text-yellow-500">Be</span>
-                  <span className="text-red-500">Coding</span>!
+                <h1 className="text-4xl md:text-5xl font-extrabold leading-tight animate-bounce-text">
+                  <span className="text-green-500">Welcome</span> to <span className="text-yellow-500 font-black">Be</span>
+                  <span className="text-red-500 font-black">Coding</span>!
                 </h1>
-                <p className="text-xl text-gray-600 animate-fade-in animation-delay-200">
+                <p className="text-xl text-gray-600 animate-fade-in animation-delay-200 mb-8">
                   Learn coding through playful challenges and level up your skills! 
                 </p>
 
@@ -256,7 +265,11 @@ export default function HomePage() {
                 <Input
                   id="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    setError("")
+                    setSuccessMessage("")
+                  }}  
                   placeholder="Enter your name"
                   required
                 />
@@ -269,7 +282,11 @@ export default function HomePage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setError("")
+                  setSuccessMessage("")
+                }}                
                 placeholder="Enter your email"
                 required
               />
@@ -281,13 +298,46 @@ export default function HomePage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  setError("")
+                  setSuccessMessage("")
+                }}  
                 placeholder="Enter your password"
                 required
               />
             </div>
 
-            {/* {error && <div className="text-sm font-medium text-destructive">{error}</div>} */}
+            {error && (
+              <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded-md text-sm animate-fade-in">
+                {error}
+              </div>
+            )}
+
+            {/* {successMessage && (
+              <div className="bg-green-100 border border-green-300 text-green-700 px-4 py-2 rounded-md text-sm animate-fade-in">
+                {successMessage}
+              </div>
+            )} */}
+
+            {showSuccessPopup && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div className="bg-white border border-green-300 rounded-xl p-6 w-full max-w-sm text-center shadow-xl animate-fade-in">
+                  <h2 className="text-lg font-semibold text-green-600 mb-2">Success!</h2>
+                  <p className="text-sm text-gray-700">{successMessage}</p>
+                  <button
+                    onClick={() => {
+                      setShowSuccessPopup(false)
+                      setOpen(false)
+                    }}
+                    className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            )}
+
 
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={handleClose}>

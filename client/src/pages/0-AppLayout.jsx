@@ -6,6 +6,8 @@ import { LogIn, LogOut, Code } from "lucide-react";
 import { useAuthUser } from "../services/security/AuthContext";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import xinyiIcon from '../components/images/XinyiIcon.JPG';
+
 
 export default function AppLayout() {
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -42,7 +44,10 @@ export default function AppLayout() {
           <div className="flex items-center gap-2">
             <Link to="/home" className="flex items-center gap-2 hover:cursor-pointer">
               <Code className="h-6 w-6 text-black" />
-              <h2 className="text-xl font-medium">BeCoding 🐭🐱🚀</h2>
+              {/* <h2 className="text-xl font-medium">BeCoding 🐱🐭</h2> */}
+              <h2 className="text-xl font-medium">🐝 BeCoding</h2>
+              {/* <img src="https://www.citypng.com/public/uploads/preview/cute-hello-kitty-face-sanrio-kitty-hd-transparent-png-735811696610249jwuhmkcufs.png" alt="Hello Kitty" className="h-6 w-6" /> */}
+              {/* <img src={xinyiIcon} alt="Hello Kitty" className="h-6 w-6" />               */}
             </Link>
           </div>
           {isAuthenticated ? (

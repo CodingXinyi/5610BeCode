@@ -13,7 +13,7 @@ datasource db {
 
 model User {
   id            Int       @id @default(autoincrement())
-  username      String    @db.VarChar(255)@default("default_username")
+  userName      String    @db.VarChar(255)@default("default_username")
   email         String    @unique
   password      String    @default("default_password")
   createdAt     DateTime  @default(now())

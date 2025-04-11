@@ -36,6 +36,7 @@ export default function ProblemDialog({
     categoryId: "",
   });
 
+  
   // Set form data when editing a problem
   useEffect(() => {
     if (editProblem) {

@@ -131,7 +131,7 @@ export default function CategoryList({ categories, isLoggedIn, setCategories, pr
               <div className="grid grid-cols-5 gap-4 p-3 border-t border-b text-xs font-medium text-muted-foreground">
                 <div>Problem Title</div>
                 <div className="text-center">Difficulty</div>
-                <div className="text-center">Source</div>
+                <div className="text-center">Leetcode Link</div>
                 <div className="text-center">Solution</div>
                 <div className="text-center">Actions</div>
               </div>

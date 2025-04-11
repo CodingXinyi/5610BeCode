@@ -18,13 +18,9 @@ const container = document.getElementById("root");
 const root = ReactDOMClient.createRoot(container);
 
 root.render(
-  <AuthProvider>
-    <BrowserRouter>
+  <BrowserRouter>
+    <AuthProvider>
       <Routes>
-        {/* <Route path="/" element={<HomePage />} />
-        <Route path="/problems" element={<ProblemsPage />} /> 
-        <Route path="/solutions/:problemId" element={<SolutionsPage />} /> */}
-
         <Route path="/" element={<AppLayout />}>
           <Route path="/home" element={<HomePage />} />
           <Route path="/problems" element={<ProblemsPage />} /> 
@@ -32,7 +28,7 @@ root.render(
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </BrowserRouter>
-  </AuthProvider>
+    </AuthProvider>
+  </BrowserRouter>
 );
 

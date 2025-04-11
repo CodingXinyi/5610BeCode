@@ -8,6 +8,7 @@ import { getAllProblems } from "../services/problemService"
 import { useParams } from "react-router-dom"; // Import useParams
 import { useAuthUser } from "../services/security/AuthContext";
 import { getLeetCodeProblemData } from "../services/leetcodeService"
+import { Link } from "react-router-dom";
 
 
 export default function SolutionsPage() {
@@ -31,7 +32,7 @@ export default function SolutionsPage() {
     const getProblem = async () => {
       const problems = await getAllProblems();
       const foundProblem = problems.find((p) => p.id === Number(problemId)); // Convert problemId to number
-      console.log("3-solution page: problems", problems, "foundProblem", foundProblem, "params", problemId);
+      // console.log("3-solution page: problems", problems, "foundProblem", foundProblem, "params", problemId);
       setProblem(foundProblem);
     };
 
@@ -74,18 +75,19 @@ export default function SolutionsPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <a href="/problems">
+      <Link to="/problems">
         <Button variant="outline" className="flex items-center gap-2 mb-6">
           <ArrowLeft className="h-4 w-4" />
           Back to problems
         </Button>
-      </a>
+      </Link>
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">{problem.problemName}</h1>
-        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground font-medium">
           <div>Difficulty: {problem.difficulty}</div>
-          <div>Category: {problem.category}</div>
+          <div>Created At: {new Date(problem.createdAt).toLocaleString()}</div>
+          
           {problem.source && (
             <a
               href={problem.source}
@@ -108,7 +110,7 @@ export default function SolutionsPage() {
         </div>
       </div>
 
-      <SolutionsList problemId={problemId} userId={user?.id} />
+      <SolutionsList problemId={problemId} />
     </div>
   )
 }

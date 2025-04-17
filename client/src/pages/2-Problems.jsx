@@ -36,7 +36,7 @@ function ProblemsPage() {
         });
         const data = await response.json()
         // console.log("category data:", data)
-        setCategories(data)
+        setCategories(data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
       } catch (error) {
         console.error("Error fetching categories:", error)
       }

@@ -1,59 +1,28 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { Button } from "../components/ui/button"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion"
 import {
-  Box,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  List,
-  Divider,
-  Paper,
-  Collapse,
-  Typography,
-  IconButton,
-  // Chip,
-  Grid,
-  Link,
-  Button,
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogContentText,
-  DialogActions,
-  TextField,
-} from "@mui/material"
-import { styled } from "@mui/material/styles"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import EditIcon from "@mui/icons-material/Edit"
-import DeleteIcon from "@mui/icons-material/Delete"
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog"
+import { Edit, Trash2, FolderOpen } from "lucide-react"
 import ProblemItem from "./problem-item"
 import CategoryDialog from "./category-dialog"
-import { fetchDeleteWithAuth, fetchPutWithAuth } from "../services/security/fetchWithAuth"
 import { putCategory, deleteCategory } from "../services/categoryService"
 
 
-// Styled components
-const ColumnHeaders = styled(Grid)(({ theme }) => ({
-  padding: theme.spacing(1, 2),
-  borderTop: `1px solid ${theme.palette.divider}`,
-  backgroundColor: "#fafafa",
-  marginBottom: theme.spacing(1),
-}))
-
-
-
 export default function CategoryList({ categories, isLoggedIn, setCategories, problemsByCategory, setProblemsByCategory }) {
-  const [expanded, setExpanded] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-
-  const handleChange = (panel) => (event, isExpanded) => {
-    setExpanded(isExpanded ? panel : false)
-  }
 
   const handleEditClick = (category) => {
     if (!isLoggedIn) {
@@ -100,128 +69,96 @@ export default function CategoryList({ categories, isLoggedIn, setCategories, pr
 
   if (!categories || categories.length === 0) {
     return (
-      <Paper sx={{ p: 3, textAlign: "center" }}>
-        <Typography variant="body1">
+      <div className="material-card p-6 text-center">
+        <FolderOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-600 mb-4">
           No categories found. {isLoggedIn ? "Create your first category!" : "Please login to create categories."}
-        </Typography>
-      </Paper>
+        </p>
+      </div>
     )
   }
 
 
   return (
-    <Box sx={{ mb: 4 }}>
-      {categories.map((category) => (
+    <div className="space-y-4 min-h-[400px]">
+      {categories.map((category, index) => (
         <Accordion
+          type="multiple"
+          collapsible
           key={category.id}
-          expanded={expanded === `panel-${category.id}`}
-          onChange={handleChange(`panel-${category.id}`)}
-          sx={{ mb: 2 }}
+          className="material-card overflow-hidden animate-fade-in"
+          // defaultValue={index === 0 ? `panel-${category.id}` : undefined}
+          defaultValue={categories.map((category) => `panel-${category.id}`)}
         >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls={`panel-${category.id}-content`}
-            id={`panel-${category.id}-header`}
-            sx={{
-              // border: '1px solid #E5E7EB', // Equivalent to border-gray-200
-              '&:hover': {
-                backgroundColor: '#eeeeee', // Equivalent to hover:bg-gray-50
-              },
-              // '&:hover': {
-              //   backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1F2937' : '#F9FAFB', // dark mode support
-              // },
-              backgroundColor: "#f5f5f5",
-            }}
-            // sx={{
-            //   backgroundColor: "#e0e0e0",  // Background color
-              // color: (theme) => theme.palette.text.primary,  // Text color
-              // '& .MuiAccordionSummary-expandIcon': {
-              //   color: (theme) => theme.palette.primary.light,  // Icon color
-              // }
-            // }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
-              <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                {category.categoryName}
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
-                <IconButton
-                  size="small"
-                  onClick={() => handleEditClick(category)}
-                  disabled={!isLoggedIn}
-                  sx={{ mr: 1 }}
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  onClick={() => handleDeleteClick(category)}
-                  disabled={!isLoggedIn}
-                  color="error"
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Box>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full">
-                {`${problemsByCategory[category.id]?.length || 0} Problems`}
-              </span>
-              {/* <Chip label={`${problemsByCategory[category.id]?.length || 0} Problems`} color="white" size="small" /> */}
-            </Box>
-          </AccordionSummary>
+          <AccordionItem value={`panel-${category.id}`} className="border-0 min-h-[60px]">
+            <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 bg-muted">
+              <div className="flex items-center justify-between w-full">
+                <h3 className="text-lg font-semibold">{category.categoryName}</h3>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEditClick(category)
+                      }}
+                      disabled={!isLoggedIn}
+                      className="h-8 w-8 rounded-full hover:bg-muted"
+                    >
+                      <Edit className="h-4 w-4" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteClick(category)
+                      }}
+                      disabled={!isLoggedIn}
+                      className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
+                    </Button>
+                  </div>
+                  <span className="category-chip">{`${problemsByCategory[category.id]?.length || 0} Problems`}</span>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="p-0">
+              <div className="grid grid-cols-5 gap-4 p-3 border-t border-b text-xs font-medium text-muted-foreground">
+                <div>Problem Title</div>
+                <div className="text-center">Difficulty</div>
+                <div className="text-center">Leetcode Link</div>
+                <div className="text-center">Solution</div>
+                <div className="text-center">Actions</div>
+              </div>
 
-        {/* insert problem into each category */}
-        <AccordionDetails sx={{ p: 0 }}>
-          {expanded === `panel-${category.id}` && (
-            <ColumnHeaders container>
-              <Grid item xs={2.4}>
-                <Typography variant="subtitle2">Problem Title</Typography>
-              </Grid>
-              <Grid item xs={2.4} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2">Difficulty</Typography>
-              </Grid>
-              <Grid item xs={2.4} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2">Source</Typography>
-              </Grid>
-              <Grid item xs={2.4} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2">Solution</Typography>
-              </Grid>
-              <Grid item xs={2.4} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2">Vote</Typography>
-              </Grid>
-            </ColumnHeaders>
-          )}
-
-        {/* {console.log("Problems for category", category.id, problemsByCategory[category.id])} */}
-        {/* {console.log("Type of problemsByCategory[category.id]:", typeof problemsByCategory[category.id])} */}
-          {problemsByCategory[category.id]?.length > 0 ? (
-            <List>
-              {problemsByCategory[category.id].map((problem, index) => (
-                <Box key={problem.id}>
-                  {index > 0 && <Divider component="li" />}
-                  <ProblemItem 
-                    problem={problem} 
-                    isLoggedIn={isLoggedIn}
-                    categories={categories}
-                    problemsByCategory={problemsByCategory}
-                    setProblemsByCategory={setProblemsByCategory}
-                  />
-                </Box>  
-              ))}
-            </List>
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: "center" }}>
-              No problems in this category yet.{" "}
-              {isLoggedIn ? "Add your first problem!" : "Please login to add problems."}
-            </Typography>
-          )}
-        </AccordionDetails>
+              {problemsByCategory[category.id]?.length > 0 ? (
+                <div className="divide-y">
+                  {problemsByCategory[category.id].map((problem) => (
+                    <ProblemItem
+                      key={problem.id}
+                      problem={problem}
+                      isLoggedIn={isLoggedIn}
+                      categories={categories}
+                      problemsByCategory={problemsByCategory}
+                      setProblemsByCategory={setProblemsByCategory}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="py-6 text-center text-muted-foreground min-h-[100px]">
+                  No problems in this category yet.
+                </div>
+              )}
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       ))}
 
-
-
-      {/* Edit Category Dialog */}
-      {/* categoryDialogOpen, setCategoryDialogOpen, categories, setCategories, isEdit = false, changeCategory = null */}
       {selectedCategory && (
         <CategoryDialog
           categoryDialogOpen={editDialogOpen}
@@ -233,26 +170,27 @@ export default function CategoryList({ categories, isLoggedIn, setCategories, pr
         />
       )}
 
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete Category</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete the category "{selectedCategory?.categoryName}"? This action cannot be
-            undone.
-          </DialogContentText>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Category</DialogTitle>
+            <DialogDescription>Are you sure you want to delete "{selectedCategory?.categoryName}"?</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => selectedCategory && handleDeleteCategory(selectedCategory)}
+              disabled={loading}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={() => handleDeleteCategory(selectedCategory)} color="error" disabled={loading}>
-            Delete
-          </Button>
-        </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   )
 }
 

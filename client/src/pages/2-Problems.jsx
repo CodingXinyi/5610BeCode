@@ -1,17 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Box, Typography, Button, AppBar, Toolbar, Container, Paper } from "@mui/material"
-import AddIcon from "@mui/icons-material/Add"
-import LogoutIcon from "@mui/icons-material/Logout"
-import LoginIcon from "@mui/icons-material/Login"
+import { Button } from "../components/ui/button"
+import { Plus, Lightbulb } from "lucide-react";
 import CategoryDialog from "../components/category-dialog"
 import ProblemDialog from "../components/problem-dialog"
 import CategoryList from "../components/category-list"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useAuthUser } from "../services/security/AuthContext";
-import { useNavigate } from "react-router-dom"; 
-import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problemServce"
+import { getProblemsByCategory, addOrUpdateProblemToCategoryMap } from "../services/problemService"
+import LoginPrompt from "../components/login-prompt";
 
 
 function ProblemsPage() {
@@ -21,17 +18,12 @@ function ProblemsPage() {
   const [openCategoryDialog, setOpenCategoryDialog] = useState(false)
   const [openProblemDialog, setOpenProblemDialog] = useState(false)
   const { isAuthenticated, loading, user, login, register, logout } = useAuthUser();
-  const navigate = useNavigate();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // Check if user is logged in
   useEffect(() => {
-    // This would be replaced with your actual auth check
-    const checkAuth = () => {
-      setIsLoggedIn(isAuthenticated)
-    }
-
-    checkAuth()
-  }, [])
+    setIsLoggedIn(isAuthenticated);
+  }, [isAuthenticated]);
+  
 
   // Fetch categories
   useEffect(() => {
@@ -43,8 +35,8 @@ function ProblemsPage() {
           headers: { "Content-Type": "application/json" }
         });
         const data = await response.json()
-        console.log("category data:", data)
-        setCategories(data)
+        // console.log("category data:", data)
+        setCategories(data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
       } catch (error) {
         console.error("Error fetching categories:", error)
       }
@@ -53,6 +45,7 @@ function ProblemsPage() {
     fetchCategories()
   }, [])
 
+
   // Effect to load problems for each category when categories change
   useEffect(() => {
     if (categories && categories.length > 0) {
@@ -60,7 +53,7 @@ function ProblemsPage() {
         const fetchProblems = async () => {
             for (const category of categories) {
                 const problems = await getProblemsByCategory(category.id);
-                console.log(problems);  // This will now log the actual problems
+                // console.log(problems);  // This will now log the actual problems
                 setProblemsByCategory((prev) => ({ ...prev, [category.id]: problems }));
             }
         };
@@ -68,22 +61,11 @@ function ProblemsPage() {
     }
   }, [categories]);
 
-  console.log("problems page", problemsByCategory);
-
-
-  const handleLogout = async (e) => {
-    e.preventDefault();
-    await logout();
-    navigate("/");
-  };
-
-  const handleLoginRedirect = () => {
-    navigate("/");
-  }
+  // console.log("problems page", problemsByCategory);
 
   const handleAddCategory = () => {
     if (!isLoggedIn) {
-      alert("Please login to add a category")
+      setShowLoginPrompt(true);
       return
     }
     setOpenCategoryDialog(true)
@@ -91,75 +73,42 @@ function ProblemsPage() {
 
   const handleAddProblem = () => {
     if (!isLoggedIn) {
-      alert("Please login to add a problem")
+      setShowLoginPrompt(true);
       return
     }
     setOpenProblemDialog(true)
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
-        <Toolbar sx={{ justifyContent: 'flex-end' }}>
-          {isLoggedIn ? (
-            <Button 
-              variant="contained" 
-              color="error" 
-              onClick={handleLogout} 
-              startIcon={<LogoutIcon />}
-            >
-              Logout
-            </Button>
-          ) : (
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={handleLoginRedirect} 
-              startIcon={<LoginIcon />}
-            >
-              Login
-            </Button>
-          )}
-        </Toolbar>
-      </AppBar>
+    
+    <div className="flex flex-col min-h-screen bg-white">
+    {/* <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50 flex flex-col relative"> */}
 
-
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4 }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', flexGrow: 1, color: "black" }}>
-            Be Coding App - Problems
-          </Typography>
-          <Box>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={handleAddCategory}
-              sx={{ mr: 2 }}
-            >
-              Add Category
+      <main className="container mx-auto px-4 py-6 flex-1">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <h1 className="text-3xl font-bold mb-6 md:mb-0">Coding Problems</h1>
+          <div className="flex gap-2">
+            <Button onClick={handleAddCategory} className="material-btn-primary font-bold px-4 py-2">
+              <Plus className="h-4 w-4 mr-2" />
+              Category
             </Button>
-            <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={handleAddProblem}>
-              Add Problem
+            <Button onClick={handleAddProblem} className="material-btn-secondary font-bold px-4 py-2">
+              <Plus className="h-4 w-4 mr-2" />
+              Problem
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
 
-        {!isLoggedIn && (
-          <Paper sx={{ p: 3, mb: 4, bgcolor: "#fff3e0", display: 'flex', alignItems: 'center' }}>
-            <Typography variant="body1" sx={{ mb: 2, mr: 2 }}>
-              Please login to create categories and problems.
-            </Typography>
-            <Button variant="contained" onClick={handleLoginRedirect} startIcon={<LoginIcon /> }>
-              Go to Login
-            </Button>
-          </Paper>
-        )}
-
-
-        <CategoryList categories={categories} isLoggedIn={isLoggedIn} setCategories={setCategories} problemsByCategory={problemsByCategory} setProblemsByCategory={setProblemsByCategory} />
-      </Container>
+        <CategoryList
+          categories={categories}
+          isLoggedIn={isLoggedIn}
+          setCategories={setCategories}
+          problemsByCategory={problemsByCategory}
+          setProblemsByCategory={setProblemsByCategory}
+        />
+      </main>
       
+      <LoginPrompt show={showLoginPrompt} onClose={() => setShowLoginPrompt(false)} />
 
       {/* categoryDialogOpen, setCategoryDialogOpen, categories, setCategories, isEdit = false, changeCategory = null */}
       <CategoryDialog
@@ -179,8 +128,9 @@ function ProblemsPage() {
           addOrUpdateProblemToCategoryMap(newProblem, problemsByCategory, setProblemsByCategory, setOpenProblemDialog)
         }
       />
-    </Box>
+    </div>
   )
 }
 
 export default ProblemsPage;
+
